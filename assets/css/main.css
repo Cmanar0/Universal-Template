@@ -1,0 +1,27 @@
+body {
+  background-color: #ffffff;
+  font-family: Arial, sans-serif, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+main h1 {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+}
+h2 {
+  font-size: 1.25rem !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+}
+
+.icon-close {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #666;
+}
+.icon-close:hover {
+  color: #333;
+}
