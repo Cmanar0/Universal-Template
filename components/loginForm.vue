@@ -7,13 +7,13 @@
         <h1 class="text-xl font-bold text-center">Welcome Back</h1>
 
         <div>
-          <label for="username" class="sr-only">Username</label>
+          <label for="email" class="sr-only">Email</label>
           <input
-            v-model="userInfo.username"
-            type="text"
-            id="username"
-            name="username"
-            placeholder="Username"
+            v-model="userInfo.email"
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Email"
             class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm"
           />
         </div>
@@ -32,8 +32,8 @@
               class="relative-icon inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
               @click="toggleShowPassword"
             >
-              <EyeIcon v-if="showPassword" />
-              <EyeSlashIcon v-else />
+              <img v-if="showPassword" src="../assets/svg/eye.svg" alt="" />
+              <img v-else src="../assets/svg/crossed_eye.svg" alt="" />
             </span>
           </div>
         </div>
@@ -76,15 +76,15 @@
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref } from 'vue'
-import EyeIcon from '../assets/EyeIcon.vue'
-import EyeSlashIcon from '../assets/EyeSlashIcon.vue'
+import apiService from '../services/api-request'
+import Cookies from 'js-cookie'
 
 const userInfo = ref({
-  username: '',
-  password: '',
-  email: ''
+  email: '',
+  password: ''
 })
 
 const rememberMe = ref(false)
@@ -94,11 +94,26 @@ const toggleShowPassword = () => {
   showPassword.value = !showPassword.value
 }
 
-const handleSubmit = () => {
-  console.log('Form submitted:', userInfo.value)
-  // Additional submit logic here
+const handleSubmit = async () => {
+  try {
+    // Send email and password for authentication
+    const data = await apiService.post('auth', {
+      email: userInfo.value.email,
+      password: userInfo.value.password
+    })
+    console.log('Login successful:', data)
+    // Store JWT in cookies for future requests
+    Cookies.set('bv_jwt', data.token, {
+      expires: 1,
+      secure: true,
+      sameSite: 'Strict'
+    })
+  } catch (error) {
+    console.error('Login failed:', error)
+  }
 }
 </script>
+
 <style>
 .custom {
   min-width: calc(100%);

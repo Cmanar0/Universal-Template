@@ -1,7 +1,12 @@
-import { defineNuxtConfig } from "nuxt/config";
+import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  modules: ["@pinia/nuxt", "@nuxtjs/tailwindcss"],
-  css: ["~/assets/css/main.css"],
-});
+  runtimeConfig: {
+    public: {
+      baseApiUrl: process.env.BASE_API_URL // Ensure this is available on both client and server
+    }
+  },
+  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
+  css: ['~/assets/css/main.css']
+})
