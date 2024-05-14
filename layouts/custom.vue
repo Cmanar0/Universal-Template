@@ -6,7 +6,11 @@
         <span>
           <hamburger class="ham hover:text-gray-300" @click="toggleMenu" />
         </span>
-        <a href="#" class="text-white text-2xl font-semibold uppercase hover:text-gray-300">Logo</a>
+        <a
+          href="#"
+          class="text-white text-2xl font-semibold uppercase hover:text-gray-300"
+          >Logo</a
+        >
         <div class="flex">
           <span class="mx-4"> {{ windowWidth }}</span>
           <div v-if="isMobile">Mobile</div>
@@ -32,7 +36,9 @@
             class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
           >
             <users class="icon" />
-            <span class="menu-item" :class="{ 'menu-item-hide': !mennuOpen }"> Users </span>
+            <span class="menu-item" :class="{ 'menu-item-hide': !mennuOpen }">
+              Users
+            </span>
           </a>
         </nav>
       </div>
