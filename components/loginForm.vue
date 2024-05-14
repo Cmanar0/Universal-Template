@@ -3,6 +3,11 @@
     <div
       class="w-full max-w-md px-10 py-8 space-y-6 bg-white shadow-lg rounded-xl"
     >
+      <!-- <div>
+        {{ $hello('world') }}
+      </div> -->
+      <br />
+
       <form @submit.prevent="handleSubmit" class="space-y-6">
         <h1 class="text-xl font-bold text-center">Welcome Back</h1>
 
@@ -81,6 +86,7 @@
 import { ref } from 'vue'
 import apiService from '../services/api-request'
 import Cookies from 'js-cookie'
+// const { $hello } = useNuxtApp()
 
 const userInfo = ref({
   email: '',
@@ -103,8 +109,9 @@ const handleSubmit = async () => {
     })
     console.log('Login successful:', data)
     // Store JWT in cookies for future requests
-    Cookies.set('bv_jwt', data.token, {
-      expires: 1,
+    console.log('sumbit data.token :>> ', data.jwt)
+    Cookies.set('bv_jwt', data.jwt, {
+      expires: 7,
       secure: true,
       sameSite: 'Strict'
     })
