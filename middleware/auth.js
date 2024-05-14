@@ -63,7 +63,7 @@ async function renewToken(token, app) {
 
   try {
     const response = await apiService.post(
-      `/refresh-token`, // Using the base URL from the config
+      `auth/refresh-token`, // Using the base URL from the config
       {},
       {
         headers: {
