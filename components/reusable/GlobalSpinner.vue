@@ -14,7 +14,6 @@ import mittBus from '../../utils/mitt.js'
 const isLoadIndicatorVisible = ref(false)
 
 const setIsLoadIndicatorVisibleTrue = () => {
-  console.log('GGGGGGGGGGGGGGGGGGGGGGGGGGGGG :>> ')
   isLoadIndicatorVisible.value = true
 }
 
