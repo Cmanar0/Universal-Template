@@ -5,8 +5,8 @@
     >
       <br />
 
-      <form @submit.prevent="handleSubmit" class="space-y-6">
-        <h1 class="text-xl font-bold text-center">Welcome Back</h1>
+      <form @submit.prevent="handleRegistration" class="space-y-6">
+        <h1 class="text-xl font-bold text-center">Register</h1>
 
         <div>
           <label for="email" class="sr-only">Email</label>
@@ -48,49 +48,26 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <input
-              v-model="rememberMe"
-              type="checkbox"
-              id="rememberMe"
-              name="rememberMe"
-              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label for="rememberMe" class="block ml-2 text-sm text-gray-900"
-              >Remember me</label
-            >
-          </div>
-          <div class="text-sm">
-            <a
-              href="/forgot-password"
-              class="font-medium text-blue-600 hover:underline"
-              >Forgot password?</a
-            >
-          </div>
-        </div>
         <button
           type="submit"
           class="w-full p-4 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700"
         >
-          Submit
+          Register
         </button>
       </form>
       <div class="text-center">
         <p class="text-sm">
-          Don't have an account?
-          <a href="/register" class="font-medium text-blue-600 hover:underline"
-            >SignUp</a
+          Already have an account?
+          <a href="/login" class="font-medium text-blue-600 hover:underline"
+            >Log In</a
           >
         </p>
       </div>
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref } from 'vue'
-import Cookies from 'js-cookie'
 import axios from 'axios'
 import { useRouter } from '#imports' // Correct import for Nuxt 3
 import { addError } from '../stores/errorsStore' // Update the path as necessary
@@ -102,23 +79,22 @@ const userInfo = ref({
   password: ''
 })
 
-const rememberMe = ref(false)
 const showPassword = ref(false)
 
 const toggleShowPassword = () => {
   showPassword.value = !showPassword.value
 }
 
-const handleSubmit = async () => {
+const handleRegistration = async () => {
   try {
     // Define the API endpoint
-    const url = 'https://next-backend-six.vercel.app/api/auth'
+    const url = 'https://next-backend-six.vercel.app/api/register'
     const payload = {
       email: userInfo.value.email,
       password: userInfo.value.password
     }
 
-    // Send email and password for authentication using Axios
+    // Send email and password for registration using Axios
     const response = await axios.post(url, payload, {
       headers: {
         'Content-Type': 'application/json'
@@ -129,54 +105,38 @@ const handleSubmit = async () => {
     if (response.status >= 200 && response.status < 300) {
       const data = response.data
 
-      if (data.status === 200) {
-        console.log('Login successful:', data)
+      // Check if the response data contains an error status
+      if (data.status && data.status !== 200) {
+        let errorMessage = 'Registration failed. Please try again.'
 
-        // Store JWT in cookies for future requests
-        if (data.jwt) {
-          console.log('submit data.jwt :>> ', data.jwt)
-          Cookies.set('bv_jwt', data.jwt, {
-            expires: 7,
-            secure: true,
-            sameSite: 'Strict'
-          })
-
-          // Redirect to dashboard upon successful login
-          router.push('/dashboard')
-        } else {
-          console.log('JWT not provided in response')
-          addError({
-            header: 'Error',
-            content: 'JWT not provided in response.',
-            btnText: 'Ok'
-          })
+        // Check if data.message is an array and contains error messages
+        if (Array.isArray(data.message)) {
+          errorMessage = data.message.map(msg => `${msg.message}`).join(' ')
         }
-      } else {
-        // Check if the response data contains an error message
-        const errorMessage = data.message
-          .map(msg => {
-            return `Error: ${msg.code}, Minimum: ${msg.minimum}`
-          })
-          .join(' ')
 
         addError({
           header: 'Error',
-          content: errorMessage || 'Login failed. Please try again.',
+          content: errorMessage,
           btnText: 'Ok'
         })
-        console.error('Login failed:', data.message)
+        console.error('Registration failed:', data.message)
+      } else {
+        console.log('Registration successful:', data)
+        // Redirect to login page upon successful registration
+        router.push('/')
       }
-    } else {
-      // Handle non-successful HTTP response
+    } else if (response.status >= 300) {
+      // Handle 3xx, 4xx, and 5xx responses
+      const errorMessage = `Registration failed with status code: ${response.status}. ${response.statusText}`
       addError({
         header: 'Error',
-        content: `Login failed with status code: ${response.status}`,
+        content: errorMessage,
         btnText: 'Ok'
       })
-      console.error('Login failed with status code:', response.status)
+      console.error('Registration failed:', response.data)
     }
   } catch (error) {
-    let errorMessage = 'Login failed. Please try again.'
+    let errorMessage = 'Registration failed. Please try again.'
 
     // Handle Axios errors
     if (error.response) {
@@ -184,7 +144,11 @@ const handleSubmit = async () => {
       // that falls out of the range of 2xx
       console.error('Error response:', error.response.data)
       errorMessage =
-        error.response.data.message || `Error: ${error.response.status}`
+        error.response.data && error.response.data.message
+          ? Array.isArray(error.response.data.message)
+            ? error.response.data.message.map(msg => `${msg.message}`).join(' ')
+            : error.response.data.message
+          : `Error: ${error.response.status}`
     } else if (error.request) {
       // The request was made but no response was received
       console.error('Error request:', error.request)

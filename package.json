@@ -16,6 +16,7 @@
     "cookie-universal-nuxt": "^2.2.2",
     "i18next": "^23.9.0",
     "js-cookie": "^3.0.5",
+    "mitt": "^3.0.1",
     "jwt-decode": "^4.0.0",
     "nuxt": "^3.11.2",
     "pinia": "^2.1.7",

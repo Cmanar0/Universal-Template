@@ -35,7 +35,10 @@ export default defineNuxtRouteMiddleware(async (to, from, next) => {
     // Token is older than 2 hours
     console.log('Token is older than 2 hours, renewing token...')
     try {
-      await renewToken(token, app)
+      const {
+        public: { baseApiUrl }
+      } = app.$config
+      await renewToken(token, app, baseApiUrl)
     } catch (error) {
       console.error('Error renewing the token:', error)
       return navigateTo('/') // Fail safely by redirecting to login
@@ -57,21 +60,16 @@ function getJwtClaims(token) {
   }
 }
 
-async function renewToken(token, app) {
-  const config = app.$config
-  const baseUrl = config.public.baseApiUrl // Accessing the base URL from the environment variable
-
+async function renewToken(token, app, baseApiUrl) {
   try {
     const response = await apiService.post(
-      `auth/refresh-token`, // Using the base URL from the config
+      'auth/refresh-token', // Endpoint without base URL
       {},
-      {
-        headers: {
-          'x-auth-token': token
-        }
-      }
+      {},
+      {},
+      baseApiUrl // Pass base URL here
     )
-    console.log('response :>> ', response)
+    // console.log('response :>> ', response);
 
     // Assuming the new token is returned directly in the response body under 'jwt'
     if (process.server) {

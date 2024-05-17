@@ -1,5 +1,7 @@
 <template>
   <div class="min-h-screen flex-col">
+    <ModalOneBtn />
+
     <!-- ------------- Navbar start ------------- -->
     <div class="nav-bar">
       <header class="bg-gray-800 text-white p-5">
@@ -11,6 +13,7 @@
           class="text-white text-2xl font-semibold uppercase hover:text-gray-300"
           >Logo</a
         >
+        <!-- <button @click="xxx">xxx</button> -->
         <div class="flex">
           <span class="mx-4"> {{ windowWidth }}</span>
           <div v-if="isMobile">Mobile</div>
@@ -62,6 +65,8 @@
 <script setup>
 import hamburger from '../assets/svg/hamburger.vue'
 import users from '../assets/svg/users.vue'
+import ModalOneBtn from '../components/reusable/ModalOneBtn' // Adjust the path as necessary
+import mittBus from '../utils/mitt.js'
 
 import { onMounted, onUnmounted, ref, computed } from 'vue'
 
@@ -78,7 +83,13 @@ const toggleMenu = () => {
 const updateWidth = () => {
   windowWidth.value = window.innerWidth
 }
-
+function xxx() {
+  mittBus.emit('openModal', {
+    headerV: 'Modalff Header',
+    contentV: 'Modal Content',
+    btnTextV: 'Confirm'
+  })
+}
 const isMobile = computed(() => {
   return windowWidth.value < 768
 })
