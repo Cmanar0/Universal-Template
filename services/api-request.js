@@ -1,7 +1,7 @@
-// api-request.js
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import { addError } from '../stores/errorsStore' // Update the path as necessary
+import mittBus from '../utils/mitt.js'
 
 // Create an Axios instance
 const api = axios.create({
@@ -25,6 +25,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   response => response,
   error => {
+    mittBus.emit('loader-off') // Hide the spinner on error
     let errorMessage = 'An unknown error occurred. Please try again.'
 
     if (error.response) {
@@ -75,6 +76,7 @@ export const apiService = {
     headers = {},
     baseURL = ''
   ) {
+    mittBus.emit('loader-on') // Show the spinner before making the request
     try {
       const response = await api({
         method,
@@ -84,8 +86,10 @@ export const apiService = {
         headers,
         baseURL
       })
+      mittBus.emit('loader-off') // Hide the spinner after receiving the response
       return response.data
     } catch (error) {
+      mittBus.emit('loader-off') // Hide the spinner in case of an error
       throw error // This will be caught by the calling function
     }
   },

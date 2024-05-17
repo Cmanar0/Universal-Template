@@ -82,6 +82,7 @@ import Cookies from 'js-cookie'
 import axios from 'axios'
 import { useRouter } from '#imports' // Correct import for Nuxt 3
 import { addError } from '../stores/errorsStore' // Update the path as necessary
+import mittBus from '../utils/mitt.js'
 
 const router = useRouter()
 
@@ -97,6 +98,8 @@ const toggleShowPassword = () => {
   showPassword.value = !showPassword.value
 }
 const handleSubmit = async () => {
+  mittBus.emit('loader-on')
+
   try {
     // Define the API endpoint
     const url = 'https://next-backend-six.vercel.app/api/auth'
@@ -190,11 +193,9 @@ const handleSubmit = async () => {
     }
 
     // Add the error to the global store
-    addError({
-      header: 'Error',
-      content: errorMessage,
-      btnText: 'Ok'
-    })
+    addError({ header: 'Error', content: errorMessage, btnText: 'Ok' })
+  } finally {
+    mittBus.emit('loader-off')
   }
 }
 </script>

@@ -1,5 +1,7 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-100">
+  <div
+    class="flex items-center justify-center min-h-screen bg-gray-100 relative"
+  >
     <div
       class="w-full max-w-md px-10 py-8 space-y-6 bg-white shadow-lg rounded-xl"
     >
@@ -72,6 +74,7 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from '#imports' // Correct import for Nuxt 3
 import { addError } from '../stores/errorsStore' // Update the path as necessary
+import mittBus from '../utils/mitt.js'
 
 const router = useRouter()
 
@@ -87,6 +90,7 @@ const toggleShowPassword = () => {
 }
 
 const handleRegistration = async () => {
+  mittBus.emit('loader-on')
   try {
     // Define the API endpoint
     const url = 'https://next-backend-six.vercel.app/api/register'
@@ -167,6 +171,8 @@ const handleRegistration = async () => {
       content: errorMessage,
       btnText: 'Ok'
     })
+  } finally {
+    mittBus.emit('loader-off')
   }
 }
 </script>

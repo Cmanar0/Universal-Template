@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen flex-col">
     <ModalOneBtn />
+    <GlobalSpinner />
 
     <!-- ------------- Navbar start ------------- -->
     <div class="nav-bar">
@@ -65,7 +66,9 @@
 <script setup>
 import hamburger from '../assets/svg/hamburger.vue'
 import users from '../assets/svg/users.vue'
-import ModalOneBtn from '../components/reusable/ModalOneBtn' // Adjust the path as necessary
+import ModalOneBtn from '../components/reusable/ModalOneBtn.vue'
+import GlobalSpinner from '../components/reusable/GlobalSpinner.vue'
+
 import mittBus from '../utils/mitt.js'
 
 import { onMounted, onUnmounted, ref, computed } from 'vue'
