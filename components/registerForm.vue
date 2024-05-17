@@ -3,11 +3,9 @@
     <div
       class="w-full max-w-md px-10 py-8 space-y-6 bg-white shadow-lg rounded-xl"
     >
-      <br />
+      <h1 class="text-2xl font-bold text-center text-gray-700">Register</h1>
 
       <form @submit.prevent="handleRegistration" class="space-y-6">
-        <h1 class="text-xl font-bold text-center">Register</h1>
-
         <div>
           <label for="email" class="sr-only">Email</label>
           <input
@@ -16,7 +14,7 @@
             id="email"
             name="email"
             placeholder="Email"
-            class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm"
+            class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
           />
         </div>
         <div class="relative">
@@ -28,21 +26,23 @@
               id="password"
               name="password"
               placeholder="Password"
-              class="custom w-full p-4 text-sm border-gray-300 rounded-md shadow-sm"
+              class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
             />
-
-            <span class="eye-span" @click="toggleShowPassword">
+            <span
+              class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer"
+              @click="toggleShowPassword"
+            >
               <img
-                class="icon-eye"
+                class="icon-eye w-5 h-5"
                 v-if="showPassword"
                 src="../assets/svg/eye.svg"
-                alt=""
+                alt="Show Password"
               />
               <img
-                class="icon-eye"
+                class="icon-eye w-5 h-5"
                 v-else
                 src="../assets/svg/crossed_eye.svg"
-                alt=""
+                alt="Hide Password"
               />
             </span>
           </div>
@@ -50,7 +50,7 @@
 
         <button
           type="submit"
-          class="w-full p-4 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700"
+          class="w-full p-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-700 rounded-md hover:from-blue-600 hover:to-blue-800 shadow-md hover:shadow-lg transition duration-200"
         >
           Register
         </button>
@@ -66,6 +66,7 @@
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
@@ -170,7 +171,7 @@ const handleRegistration = async () => {
 }
 </script>
 
-<style>
+<style scoped>
 .custom {
   min-width: calc(100%);
 }
@@ -188,5 +189,21 @@ const handleRegistration = async () => {
   position: absolute;
   right: 15px;
   top: 15px;
+}
+
+input:focus {
+  outline: none;
+}
+
+.icon-eye {
+  cursor: pointer;
+}
+
+button {
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
 }
 </style>

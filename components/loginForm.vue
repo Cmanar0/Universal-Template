@@ -3,11 +3,9 @@
     <div
       class="w-full max-w-md px-10 py-8 space-y-6 bg-white shadow-lg rounded-xl"
     >
-      <br />
+      <h1 class="text-2xl font-bold text-center text-gray-700">Welcome Back</h1>
 
       <form @submit.prevent="handleSubmit" class="space-y-6">
-        <h1 class="text-xl font-bold text-center">Welcome Back</h1>
-
         <div>
           <label for="email" class="sr-only">Email</label>
           <input
@@ -16,7 +14,7 @@
             id="email"
             name="email"
             placeholder="Email"
-            class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm"
+            class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
           />
         </div>
         <div class="relative">
@@ -28,39 +26,29 @@
               id="password"
               name="password"
               placeholder="Password"
-              class="custom w-full p-4 text-sm border-gray-300 rounded-md shadow-sm"
+              class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
             />
-
-            <span class="eye-span" @click="toggleShowPassword">
+            <span
+              class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer"
+              @click="toggleShowPassword"
+            >
               <img
-                class="icon-eye"
+                class="icon-eye w-5 h-5"
                 v-if="showPassword"
                 src="../assets/svg/eye.svg"
-                alt=""
+                alt="Show Password"
               />
               <img
-                class="icon-eye"
+                class="icon-eye w-5 h-5"
                 v-else
                 src="../assets/svg/crossed_eye.svg"
-                alt=""
+                alt="Hide Password"
               />
             </span>
           </div>
         </div>
 
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <input
-              v-model="rememberMe"
-              type="checkbox"
-              id="rememberMe"
-              name="rememberMe"
-              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label for="rememberMe" class="block ml-2 text-sm text-gray-900"
-              >Remember me</label
-            >
-          </div>
+        <div class="flex items-center justify-center">
           <div class="text-sm">
             <a
               href="/forgot-password"
@@ -71,7 +59,7 @@
         </div>
         <button
           type="submit"
-          class="w-full p-4 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700"
+          class="w-full p-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-700 rounded-md hover:from-blue-600 hover:to-blue-800 shadow-md hover:shadow-lg transition duration-200"
         >
           Submit
         </button>
@@ -80,7 +68,7 @@
         <p class="text-sm">
           Don't have an account?
           <a href="/register" class="font-medium text-blue-600 hover:underline"
-            >SignUp</a
+            >Sign Up</a
           >
         </p>
       </div>
@@ -102,13 +90,12 @@ const userInfo = ref({
   password: ''
 })
 
-const rememberMe = ref(false)
+// const rememberMe = ref(false)
 const showPassword = ref(false)
 
 const toggleShowPassword = () => {
   showPassword.value = !showPassword.value
 }
-
 const handleSubmit = async () => {
   try {
     // Define the API endpoint
@@ -129,7 +116,22 @@ const handleSubmit = async () => {
     if (response.status >= 200 && response.status < 300) {
       const data = response.data
 
-      if (data.status === 200) {
+      // Check if the response data contains an error status
+      if (data.status && data.status !== 200) {
+        let errorMessage = 'Login failed. Please try again.'
+
+        // Check if data.message is an array and contains error messages
+        if (Array.isArray(data.message)) {
+          errorMessage = data.message.map(msg => `${msg.message}`).join(' ')
+        }
+
+        addError({
+          header: 'Error',
+          content: errorMessage,
+          btnText: 'Ok'
+        })
+        console.error('Login failed:', data.message)
+      } else {
         console.log('Login successful:', data)
 
         // Store JWT in cookies for future requests
@@ -151,29 +153,16 @@ const handleSubmit = async () => {
             btnText: 'Ok'
           })
         }
-      } else {
-        // Check if the response data contains an error message
-        const errorMessage = data.message
-          .map(msg => {
-            return `Error: ${msg.code}, Minimum: ${msg.minimum}`
-          })
-          .join(' ')
-
-        addError({
-          header: 'Error',
-          content: errorMessage || 'Login failed. Please try again.',
-          btnText: 'Ok'
-        })
-        console.error('Login failed:', data.message)
       }
-    } else {
-      // Handle non-successful HTTP response
+    } else if (response.status >= 300) {
+      // Handle 3xx, 4xx, and 5xx responses
+      const errorMessage = `Login failed with status code: ${response.status}. ${response.statusText}`
       addError({
         header: 'Error',
-        content: `Login failed with status code: ${response.status}`,
+        content: errorMessage,
         btnText: 'Ok'
       })
-      console.error('Login failed with status code:', response.status)
+      console.error('Login failed:', response.data)
     }
   } catch (error) {
     let errorMessage = 'Login failed. Please try again.'
@@ -184,7 +173,11 @@ const handleSubmit = async () => {
       // that falls out of the range of 2xx
       console.error('Error response:', error.response.data)
       errorMessage =
-        error.response.data.message || `Error: ${error.response.status}`
+        error.response.data && error.response.data.message
+          ? Array.isArray(error.response.data.message)
+            ? error.response.data.message.map(msg => `${msg.message}`).join(' ')
+            : error.response.data.message
+          : `Error: ${error.response.status}`
     } else if (error.request) {
       // The request was made but no response was received
       console.error('Error request:', error.request)
@@ -206,7 +199,7 @@ const handleSubmit = async () => {
 }
 </script>
 
-<style>
+<style scoped>
 .custom {
   min-width: calc(100%);
 }
@@ -224,5 +217,21 @@ const handleSubmit = async () => {
   position: absolute;
   right: 15px;
   top: 15px;
+}
+
+input:focus {
+  outline: none;
+}
+
+.icon-eye {
+  cursor: pointer;
+}
+
+button {
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
 }
 </style>
