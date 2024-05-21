@@ -16,12 +16,24 @@
         >
         <!-- ------------- User Dropdown Menu start ------------- -->
         <div>
-          <div class="relative inline-block" @click="toggleDropdown">
-            <button
-              class="px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+          <div class="relative inline-block">
+            <div
+              class="flex items-center gap-x-2 cursor-pointer"
+              @click="toggleDropdown"
             >
-              Menu
-            </button>
+              Marián Adamus
+              <img
+                :class="{
+                  'rotate-180': isOpen,
+                  'rotate-0': !isOpen,
+                  'transition-transform duration-300': true
+                }"
+                class="icon"
+                src="../assets/svg/down.svg"
+                alt="dropdown"
+              />
+            </div>
+
             <ul
               v-if="isOpen"
               class="absolute right-0 w-48 py-2 mt-2 bg-white rounded-lg shadow-xl z-20"
@@ -65,7 +77,7 @@
         <nav>
           <a
             v-if="(mennuOpen && isMobile) || !isMobile"
-            href="/"
+            href="/users"
             class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
           >
             <users class="icon" />
