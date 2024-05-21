@@ -37,12 +37,16 @@
                 v-if="showPassword"
                 src="../assets/svg/eye.svg"
                 alt="Show Password"
+                data-testid="show-password-icon"
+                id="show-password-icon"
               />
               <img
                 class="icon-eye w-5 h-5"
                 v-else
                 src="../assets/svg/crossed_eye.svg"
                 alt="Hide Password"
+                data-testid="hide-password-icon"
+                id="hide-password-icon"
               />
             </span>
           </div>
