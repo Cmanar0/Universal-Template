@@ -3,8 +3,11 @@
     v-if="isVisible"
     class="fixed inset-0 overflow-y-auto flex items-center justify-center z-50"
   >
-    <div class="fixed inset-0 bg-black opacity-50"></div>
-    <div class="relative bg-white rounded-lg shadow-lg w-96 p-6">
+    <div class="fixed inset-0 bg-black opacity-50" @click="closeModal"></div>
+    <div
+      ref="modalContent"
+      class="relative bg-white rounded-lg shadow-lg w-96 p-6"
+    >
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-semibold">{{ header }}</h2>
         <button
@@ -43,13 +46,14 @@
 </template>
 
 <script setup>
-import { ref, watchEffect, onMounted } from 'vue'
+import { ref, watchEffect, onMounted, onUnmounted } from 'vue'
 import state from '../stores/errorsStore' // Import the global state
 
 const isVisible = ref(false)
 const header = ref('')
 const content = ref('')
 const btnText = ref('')
+const modalContent = ref(null)
 
 const closeModal = () => {
   isVisible.value = false
@@ -75,9 +79,16 @@ const showNextError = () => {
   }
 }
 
+const closeOnOutsideClick = event => {
+  if (modalContent.value && !modalContent.value.contains(event.target)) {
+    closeModal()
+  }
+}
+
 // Initial check on mount
 onMounted(() => {
   showNextError()
+  document.addEventListener('click', closeOnOutsideClick)
 })
 
 // Watch for changes in the global state
@@ -85,6 +96,10 @@ watchEffect(() => {
   if (!isVisible.value && state.errors.length > 0) {
     showNextError()
   }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeOnOutsideClick)
 })
 </script>
 
