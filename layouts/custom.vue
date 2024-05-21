@@ -5,9 +5,7 @@
 
     <!-- ------------- Navbar start ------------- -->
     <div class="nav-bar">
-      <header
-        class="bg-gray-800 text-white p-5 flex justify-between items-center"
-      >
+      <header class="bg-gray-800 text-white p-5">
         <span>
           <hamburger class="ham hover:text-gray-300" @click="toggleMenu" />
         </span>
@@ -16,54 +14,41 @@
           class="text-white text-2xl font-semibold uppercase hover:text-gray-300"
           >Logo</a
         >
-        <!-- ------------- Updated Dropdown Menu Start ------------- -->
-        <div class="relative inline-block text-left">
-          <div>
+        <!-- ------------- User Dropdown Menu start ------------- -->
+        <div>
+          <div class="relative inline-block" @click="toggleDropdown">
             <button
-              @click="toggleDropdown"
-              type="button"
-              class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
-              id="options-menu"
-              aria-haspopup="true"
-              aria-expanded="true"
+              class="px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600"
             >
-              {{ userName }}
-              <svg
-                class="-mr-1 ml-2 h-5 w-5"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 3a1 1 0 011 1v8a1 1 0 01-2 0V4a1 1 0 011-1zm-3.293 7.707a1 1 0 011.414 0L10 12.586l1.879-1.879a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                />
-              </svg>
+              Menu
             </button>
+            <ul
+              v-if="isOpen"
+              class="absolute right-0 w-48 py-2 mt-2 bg-white rounded-lg shadow-xl z-20"
+            >
+              <li>
+                <a
+                  href="/account"
+                  class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  >Account</a
+                >
+              </li>
+              <li>
+                <a
+                  @click="logout"
+                  class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  >Logout</a
+                >
+              </li>
+            </ul>
           </div>
           <div
-            v-if="dropdownOpen"
-            class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
-          >
-            <div class="py-1 rounded-md shadow-xs">
-              <a
-                href="/account"
-                class="block px-4 py-2 text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
-                role="menuitem"
-                >Account</a
-              >
-              <a
-                @click="logout"
-                class="block px-4 py-2 text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-none focus:bg-gray-100 cursor-pointer"
-                role="menuitem"
-                >Logout</a
-              >
-            </div>
-          </div>
+            v-if="isOpen"
+            class="fixed inset-0 bg-transparent z-10"
+            @click="closeDropdown"
+          ></div>
         </div>
-        <!-- ------------- Updated Dropdown Menu End ------------- -->
+        <!-- ------------- User Dropdown Menu end ------------- -->
       </header>
     </div>
     <!-- ------------- Navbar end ------------- -->
@@ -84,9 +69,9 @@
             class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
           >
             <users class="icon" />
-            <span class="menu-item" :class="{ 'menu-item-hide': !mennuOpen }"
-              >Users</span
-            >
+            <span class="menu-item" :class="{ 'menu-item-hide': !mennuOpen }">
+              Users
+            </span>
           </a>
         </nav>
       </div>
@@ -108,34 +93,45 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from '#imports'
-import Cookies from 'js-cookie'
 import hamburger from '../assets/svg/hamburger.vue'
 import users from '../assets/svg/users.vue'
 import ModalOneBtn from '../components/reusable/ModalOneBtn.vue'
 import GlobalSpinner from '../components/reusable/GlobalSpinner.vue'
-import mittBus from '../utils/mitt.js'
-
-const userName = ref('John Doe') // Replace this with the actual user name from your state/store
-const dropdownOpen = ref(false)
-const toggleDropdown = () => {
-  dropdownOpen.value = !dropdownOpen.value
-}
-
+import Cookies from 'js-cookie'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+// Variables:
 const router = useRouter()
-
+const windowWidth = ref(0)
+// ------------- User Dropdown Menu start ------------- :
 const logout = () => {
   Cookies.remove('bv_jwt')
   router.push('/')
 }
+const isOpen = ref(false)
 
-const windowWidth = ref(0)
+const toggleDropdown = () => {
+  isOpen.value = !isOpen.value
+}
+const closeDropdown = () => {
+  isOpen.value = false
+}
+// ------------- User Dropdown Menu end -------------
+// ------------- toggle menu on mobile start ------------- :
+const mennuOpen = ref(false)
+
+const toggleMenu = () => {
+  mennuOpen.value = !mennuOpen.value
+}
+// ------------- toggle menu on mobile end -------------
+// ------------- update window width start ------------- :
 const updateWidth = () => {
   windowWidth.value = window.innerWidth
 }
-const isMobile = computed(() => windowWidth.value < 768)
-
+const isMobile = computed(() => {
+  return windowWidth.value < 768
+})
+// ------------- update window width end -------------
 onMounted(() => {
   window.addEventListener('resize', updateWidth)
   updateWidth()
