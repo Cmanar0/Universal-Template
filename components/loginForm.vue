@@ -76,15 +76,12 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import Cookies from 'js-cookie'
 import axios from 'axios'
-import { useRouter } from '#imports' // Correct import for Nuxt 3
 import { addError } from '../stores/errorsStore' // Update the path as necessary
 import mittBus from '../utils/mitt.js'
-
-const router = useRouter()
 
 const userInfo = ref({
   email: '',
@@ -97,6 +94,7 @@ const showPassword = ref(false)
 const toggleShowPassword = () => {
   showPassword.value = !showPassword.value
 }
+
 const handleSubmit = async () => {
   mittBus.emit('loader-on')
 
@@ -147,7 +145,7 @@ const handleSubmit = async () => {
           })
 
           // Redirect to dashboard upon successful login
-          router.push('/dashboard')
+          await navigateTo('/dashboard')
         } else {
           console.log('JWT not provided in response')
           addError({
