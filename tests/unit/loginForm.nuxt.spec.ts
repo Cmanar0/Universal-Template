@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import LoginForm from '../../components/LoginForm.vue'
 
-import HelloWorld from '../../components/HelloWorld.vue'
-
-describe('HelloWorld', () => {
-  it('component renders Hello world properly', () => {
-    const wrapper = mount(HelloWorld)
-    expect(wrapper.text()).toContain('Hello world')
+describe('LoginForm', () => {
+  it('renders the form correctly', () => {
+    const wrapper = mount(LoginForm)
+    expect(wrapper.get('input[placeholder="Email"]')).toBeTruthy()
+    expect(wrapper.get('input[placeholder="Password"]')).toBeTruthy()
+    expect(wrapper.get('button[type="submit"]')).toBeTruthy()
   })
 })
