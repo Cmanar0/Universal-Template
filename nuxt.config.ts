@@ -8,6 +8,6 @@ export default defineNuxtConfig({
       baseApiUrl: process.env.BASE_API_URL // Ensure this is available on both client and server
     }
   },
-  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
+  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss',  '@nuxt/test-utils/module'],
   css: ['~/assets/css/main.css']
 })
