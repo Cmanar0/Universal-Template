@@ -14,6 +14,7 @@
           class="text-white text-2xl font-semibold uppercase hover:text-gray-300"
           >Logo</a
         >
+        {{delayedMenuClosed}}
         <!-- ------------- User Dropdown Menu start ------------- -->
         <div>
           <div class="relative inline-block">
@@ -63,6 +64,7 @@
         <!-- ------------- User Dropdown Menu end ------------- -->
       </header>
     </div>
+
     <!-- ------------- Navbar end ------------- -->
     <div class="flex">
       <!-- ------------- Sidebar start ------------- -->
@@ -81,7 +83,9 @@
             class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
           >
             <users class="icon" />
-            <span class="menu-item" :class="{ 'menu-item-hide': !mennuOpen }">
+            <span
+            v-if="(mennuOpen && isMobile) || !isMobile"
+            class="menu-item" :class="{ 'menu-item-hide': !mennuOpen, 'display-none-delay': !delayedMenuClosed }">
               Users
             </span>
           </a>
@@ -102,18 +106,19 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import hamburger from '../assets/svg/hamburger.vue'
 import users from '../assets/svg/users.vue'
 import ModalOneBtn from '../components/reusable/ModalOneBtn.vue'
 import GlobalSpinner from '../components/reusable/GlobalSpinner.vue'
 import Cookies from 'js-cookie'
-import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+
 // Variables:
 const router = useRouter()
 const windowWidth = ref(0)
+
 // ------------- User Dropdown Menu start ------------- :
 const logout = () => {
   Cookies.remove('bv_jwt')
@@ -130,10 +135,29 @@ const closeDropdown = () => {
 // ------------- User Dropdown Menu end -------------
 // ------------- toggle menu on mobile start ------------- :
 const mennuOpen = ref(false)
+const delayedMenuClosed = ref(false)
+let closeMenuTimeout = null
 
 const toggleMenu = () => {
   mennuOpen.value = !mennuOpen.value
 }
+
+// Watch for changes in mennuOpen and update delayedMenuClosed
+watch(mennuOpen, (newValue) => {
+  if (newValue) {
+    delayedMenuClosed.value = true
+    if (closeMenuTimeout) {
+      clearTimeout(closeMenuTimeout)
+      closeMenuTimeout = null
+    }
+  } else {
+    closeMenuTimeout = setTimeout(() => {
+      delayedMenuClosed.value = false
+      closeMenuTimeout = null
+    }, 1000)
+  }
+})
+
 // ------------- toggle menu on mobile end -------------
 // ------------- update window width start ------------- :
 const updateWidth = () => {
@@ -142,16 +166,24 @@ const updateWidth = () => {
 const isMobile = computed(() => {
   return windowWidth.value < 768
 })
+
 // ------------- update window width end -------------
 onMounted(() => {
   window.addEventListener('resize', updateWidth)
   updateWidth()
+
+  // Set delayedMenuClosed based on mennuOpen initially
+  delayedMenuClosed.value = mennuOpen.value
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateWidth)
+  if (closeMenuTimeout) {
+    clearTimeout(closeMenuTimeout)
+  }
 })
 </script>
+
 
 <style scoped>
 /* -------------- Navbar start -------------- */
@@ -247,6 +279,9 @@ main {
 .menu-item-hide {
   transition: opacity 0.5s;
   opacity: 0;
+}
+.display-none-delay {
+  display: none;
 }
 /* -------------- Sidebar end -------------- */
 </style>
