@@ -1,5 +1,5 @@
 <template>
-  <users-table />
+  <dashboard />
 </template>
 <script setup>
 definePageMeta({
