@@ -90,7 +90,6 @@
       <!-- ------------- Sidebar end ------------- -->
       <!-- ------------- Main content start ------------- -->
       <main
-        class="p-5"
         :class="{
           'main-margin-desktop-menu-closed': !mennuOpen && !isMobile,
           'main-margin-desktop-menu-open': mennuOpen && !isMobile,
