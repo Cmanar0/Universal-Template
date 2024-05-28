@@ -200,6 +200,9 @@ const handleSubmit = async () => {
     mittBus.emit('loader-off')
   }
 }
+const navigateTo = (url: string) => {
+  window.location.href = url
+}
 </script>
 
 <style scoped>
