@@ -66,8 +66,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useNotificationStore } from '@/stores/notifications'
+import { ref } from 'vue'
 
 const user = ref({
   name: 'Henry Wells',

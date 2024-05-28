@@ -2,6 +2,7 @@
   <div class="min-h-screen flex-col">
     <ModalOneBtn />
     <GlobalSpinner />
+    <Notification class="z-index-1100" />
 
     <!-- ------------- Navbar start ------------- -->
     <div class="nav-bar">
@@ -9,12 +10,13 @@
         <span>
           <hamburger class="ham hover:text-gray-300" @click="toggleMenu" />
         </span>
+        <button @click="triggerNotification">Trigger Notification</button>
+
         <a
           href="#"
           class="text-white text-2xl font-semibold uppercase hover:text-gray-300"
           >Logo</a
         >
-        {{delayedMenuClosed}}
         <!-- ------------- User Dropdown Menu start ------------- -->
         <div>
           <div class="relative inline-block">
@@ -79,14 +81,53 @@
         <nav>
           <a
             v-if="(mennuOpen && isMobile) || !isMobile"
+            href="/dashboard"
+            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
+          >
+            <img class="icon" src="../assets/svg/projects.svg" alt="projects" />
+            <span
+              v-if="(mennuOpen && isMobile) || !isMobile"
+              class="menu-item"
+              :class="{
+                'menu-item-hide': !mennuOpen,
+                'display-none-delay': !delayedMenuClosed
+              }"
+            >
+              Projects
+            </span>
+          </a>
+          <a
+            v-if="(mennuOpen && isMobile) || !isMobile"
             href="/users"
             class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
           >
-            <users class="icon" />
+            <img class="icon" src="../assets/svg/users.svg" alt="users" />
             <span
-            v-if="(mennuOpen && isMobile) || !isMobile"
-            class="menu-item" :class="{ 'menu-item-hide': !mennuOpen, 'display-none-delay': !delayedMenuClosed }">
+              v-if="(mennuOpen && isMobile) || !isMobile"
+              class="menu-item"
+              :class="{
+                'menu-item-hide': !mennuOpen,
+                'display-none-delay': !delayedMenuClosed
+              }"
+            >
               Users
+            </span>
+          </a>
+          <a
+            v-if="(mennuOpen && isMobile) || !isMobile"
+            href="/plans"
+            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
+          >
+            <img class="icon" src="../assets/svg/plans.svg" alt="plans" />
+            <span
+              v-if="(mennuOpen && isMobile) || !isMobile"
+              class="menu-item"
+              :class="{
+                'menu-item-hide': !mennuOpen,
+                'display-none-delay': !delayedMenuClosed
+              }"
+            >
+              Plans
             </span>
           </a>
         </nav>
@@ -106,14 +147,16 @@
     </div>
   </div>
 </template>
+
 <script setup>
 import hamburger from '../assets/svg/hamburger.vue'
-import users from '../assets/svg/users.vue'
 import ModalOneBtn from '../components/reusable/ModalOneBtn.vue'
 import GlobalSpinner from '../components/reusable/GlobalSpinner.vue'
 import Cookies from 'js-cookie'
 import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import Notification from '@/components/Notification.vue'
+import { addNotification } from '@/stores/notificationStore'
 
 // Variables:
 const router = useRouter()
@@ -143,7 +186,7 @@ const toggleMenu = () => {
 }
 
 // Watch for changes in mennuOpen and update delayedMenuClosed
-watch(mennuOpen, (newValue) => {
+watch(mennuOpen, newValue => {
   if (newValue) {
     delayedMenuClosed.value = true
     if (closeMenuTimeout) {
@@ -159,6 +202,15 @@ watch(mennuOpen, (newValue) => {
 })
 
 // ------------- toggle menu on mobile end -------------
+// ------------- notification logic start ------------- :
+
+const triggerNotification = () => {
+  addNotification({
+    title: 'Notification',
+    message: 'This is a notification message'
+  })
+}
+// ------------- notification logic end -------------
 // ------------- update window width start ------------- :
 const updateWidth = () => {
   windowWidth.value = window.innerWidth
@@ -183,7 +235,6 @@ onUnmounted(() => {
   }
 })
 </script>
-
 
 <style scoped>
 /* -------------- Navbar start -------------- */
@@ -282,6 +333,9 @@ main {
 }
 .display-none-delay {
   display: none;
+}
+.z-index-1100 {
+  z-index: 1100;
 }
 /* -------------- Sidebar end -------------- */
 </style>
