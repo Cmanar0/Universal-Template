@@ -48,25 +48,48 @@
     <!-- Key Metrics Section -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div
-        class="bg-white p-4 rounded-lg shadow-md text-center"
+        class="card dark:bg-zink-700"
         v-for="metric in metrics"
         :key="metric.title"
       >
-        <div class="flex items-center justify-center mb-4">
-          <div class="bg-blue-100 p-2 rounded-full" v-html="metric.icon"></div>
+        <div class="card-body border-b border-gray-300 dark:border-zink-50">
+          <div class="flex justify-between w-full">
+            <div class="flex-shrink-0 font-medium dark:text-white">
+              <p class="text-13 text-gray-600 dark:text-zink-200">
+                {{ metric.title }}
+              </p>
+              <h4 class="text-[19px] leading-5 mt-3">{{ metric.value }}</h4>
+            </div>
+            <div>
+              <apexchart
+                v-if="isClient"
+                :options="metric.chartOptions"
+                :series="metric.chartData"
+                type="area"
+                height="150"
+                class="chart-placeholder"
+              ></apexchart>
+            </div>
+          </div>
         </div>
-        <h4 class="text-lg font-semibold">{{ metric.title }}</h4>
-        <p class="text-2xl font-bold">{{ metric.value }}</p>
-        <p class="text-green-600 mt-1">
-          {{ metric.change }} From previous period
-        </p>
+        <div class="card-body !py-4">
+          <p class="text-13 dark:text-zink-200">
+            <span
+              class="inline bg-green-100 mr-2 text-[9px] text-green-500 px-1 py-[2px] rounded font-medium dark:bg-green-500/20"
+            >
+              <i class="bx bx-trending-up align-center me-1"></i
+              >{{ metric.change }}
+            </span>
+            From previous period
+          </p>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const user = ref({
   name: 'Henry Wells',
@@ -83,23 +106,127 @@ const metrics = ref([
     title: 'Orders',
     value: 1452,
     change: '+0.2%',
-    icon: '<svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>'
+    colors: ['#78d7b4', '#f0a'],
+    chartOptions: {
+      chart: {
+        id: 'orders_chart',
+        sparkline: {
+          enabled: true
+        }
+      },
+      stroke: {
+        curve: 'smooth'
+      },
+      markers: {
+        size: 0
+      },
+      xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
+      }
+    },
+    chartData: [
+      {
+        name: 'Orders',
+        data: [30, 40, 35, 50, 49, 60, 70]
+      },
+      {
+        name: 'Pending Orders',
+        data: [20, 30, 25, 40, 39, 50, 60]
+      }
+    ]
   },
   {
     title: 'Revenue',
     value: '$28,452',
     change: '+0.2%',
-    icon: '<svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>'
+    colors: ['#78d7b4', '#f0a'],
+    chartOptions: {
+      chart: {
+        id: 'revenue_chart',
+        sparkline: {
+          enabled: true
+        }
+      },
+      stroke: {
+        curve: 'smooth'
+      },
+      markers: {
+        size: 0
+      },
+      xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
+      }
+    },
+    chartData: [
+      {
+        name: 'Revenue',
+        data: [50, 60, 70, 80, 90, 100, 110]
+      },
+      {
+        name: 'Projected Revenue',
+        data: [40, 50, 60, 70, 80, 90, 100]
+      }
+    ]
   },
   {
     title: 'Average Price',
     value: '$16.2',
     change: '+0.0%',
-    icon: '<svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>'
+    colors: ['#78d7b4', '#f0a'],
+    chartOptions: {
+      chart: {
+        id: 'average_price_chart',
+        sparkline: {
+          enabled: true
+        }
+      },
+      stroke: {
+        curve: 'smooth'
+      },
+      markers: {
+        size: 0
+      },
+      xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
+      }
+    },
+    chartData: [
+      {
+        name: 'Average Price',
+        data: [10, 20, 15, 25, 22, 30, 28]
+      },
+      {
+        name: 'Projected Price',
+        data: [8, 18, 13, 23, 20, 28, 26]
+      }
+    ]
   }
 ])
+
+const isClient = ref(false)
+
+onMounted(() => {
+  isClient.value = true
+})
 </script>
 
 <style scoped>
-/* Add any additional styles if needed */
+.card {
+  background-color: #fff;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+.card-body {
+  padding: 1rem;
+}
+.dark .card {
+  background-color: #1a1a1a;
+}
+.text-13 {
+  font-size: 13px;
+}
+.chart-placeholder {
+  width: 100%;
+  height: 150px;
+}
 </style>
