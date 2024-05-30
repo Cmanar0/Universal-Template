@@ -64,6 +64,7 @@
             <div class="flex-shrink-0 font-medium">
               <p class="text-lg font-bold text-gray-800">{{ project.title }}</p>
               <h4
+                v-if="project.isSimulationGenerated"
                 class="text-[19px] leading-5 mt-3"
                 :class="{
                   'text-green-500': project.value >= 0,
@@ -73,7 +74,12 @@
                 {{ project.value >= 0 ? '+' : '' }}{{ project.value }}
                 <span class="text-gray-500">CZK / year</span>
               </h4>
+              <h4 v-else class="text-[19px] leading-5 mt-3 opacity-0">
+                Placeholder
+                <span class="text-gray-500">CZK / year</span>
+              </h4>
             </div>
+
             <div class="flex items-center justify-center w-full min-h-[150px]">
               <client-only>
                 <apexchart
@@ -85,8 +91,9 @@
                   height="150"
                   class="chart-placeholder"
                 ></apexchart>
-                <p v-else class="text-red-500 text-center p-4">
-                  Simulation data will be available after generation.
+                <p v-else class="text-red-500 text-center p-8">
+                  Simulation data will be available after you complete section
+                  "simulation".
                 </p>
               </client-only>
             </div>
