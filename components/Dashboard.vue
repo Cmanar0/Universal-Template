@@ -45,45 +45,87 @@
       />
     </div>
 
-    <!-- Key Metrics Section -->
+    <!-- Projects Section -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div
-        class="card dark:bg-zink-700"
-        v-for="metric in metrics"
-        :key="metric.title"
+        class="card"
+        :class="{
+          'border-green-500':
+            project.isProfitable && project.isSimulationGenerated,
+          'border-red-500':
+            !project.isProfitable && project.isSimulationGenerated,
+          'border-gray-300': !project.isSimulationGenerated
+        }"
+        v-for="project in projects"
+        :key="project.title"
       >
-        <div class="card-body border-b border-gray-300 dark:border-zink-50">
-          <div class="flex justify-between w-full">
-            <div class="flex-shrink-0 font-medium dark:text-white">
-              <p class="text-13 text-gray-600 dark:text-zink-200">
-                {{ metric.title }}
-              </p>
-              <h4 class="text-[19px] leading-5 mt-3">{{ metric.value }}</h4>
+        <div class="card-body border-b border-gray-300">
+          <div class="flex flex-col justify-between w-full">
+            <div class="flex-shrink-0 font-medium">
+              <p class="text-lg font-bold text-gray-800">{{ project.title }}</p>
+              <h4
+                class="text-[19px] leading-5 mt-3"
+                :class="{
+                  'text-green-500': project.value >= 0,
+                  'text-red-500': project.value < 0
+                }"
+              >
+                {{ project.value >= 0 ? '+' : '' }}{{ project.value }}
+                <span class="text-gray-500">CZK / year</span>
+              </h4>
             </div>
-            <div>
+            <div class="flex items-center justify-center w-full min-h-[150px]">
               <client-only>
                 <apexchart
+                  v-if="project.isSimulationGenerated"
                   ref="apexChartsRef"
-                  :options="metric.chartOptions"
-                  :series="metric.chartData"
+                  :options="project.chartOptions"
+                  :series="project.chartData"
                   type="area"
                   height="150"
                   class="chart-placeholder"
                 ></apexchart>
+                <p v-else class="text-red-500 text-center p-4">
+                  Simulation data will be available after generation.
+                </p>
               </client-only>
             </div>
           </div>
         </div>
+        <div class="text-center mt-4 mb-6">
+          <a
+            :href="'/edit-project/' + project.title"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 mr-4 ml-4 w-auto block rounded"
+          >
+            {{
+              isProjectCompleted(project.stages)
+                ? 'Edit Project'
+                : 'Continue Editing'
+            }}
+          </a>
+        </div>
+        <div
+          v-if="project.isSimulationGenerated && !project.isProfitable"
+          class="text-center text-red-500 mt-4"
+        >
+          The project needs adjustments to be profitable.
+        </div>
         <div class="card-body !py-4">
-          <p class="text-13 dark:text-zink-200">
-            <span
-              class="inline bg-green-100 mr-2 text-[9px] text-green-500 px-1 py-[2px] rounded font-medium dark:bg-green-500/20"
+          <ul class="timeline pl-4">
+            <li
+              v-for="(completed, stage) in project.stages"
+              :key="stage"
+              :class="{ completed: completed }"
             >
-              <i class="bx bx-trending-up align-center me-1"></i
-              >{{ metric.change }}
-            </span>
-            From previous period
-          </p>
+              <span
+                :class="{
+                  'text-gray-800': completed,
+                  'text-gray-500': !completed
+                }"
+                >{{ stage }}</span
+              >
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -91,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { defineAsyncComponent } from 'vue'
 import mittBus from '../utils/mitt.js'
 
@@ -107,48 +149,25 @@ const subscription = ref({
   plan: 'Premium Plan'
 })
 
-const metrics = ref([
+const projects = ref([
   {
-    title: 'Orders',
+    title: 'Project A',
     value: 1452,
     change: '+0.2%',
-    colors: ['#78d7b4', '#f0a'],
-    chartOptions: {
-      chart: {
-        id: 'orders_chart',
-        sparkline: {
-          enabled: true
-        }
-      },
-      stroke: {
-        curve: 'smooth'
-      },
-      markers: {
-        size: 0
-      },
-      xaxis: {
-        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
-      }
+    isSimulationGenerated: true,
+    isProfitable: true,
+    stages: {
+      businessModel: true,
+      productService: true,
+      expenses: true,
+      margins: true,
+      simulation: true,
+      businessPlan: true
     },
-    chartData: [
-      {
-        name: 'Orders',
-        data: [30, 40, 35, 50, 49, 60, 70]
-      },
-      {
-        name: 'Pending Orders',
-        data: [20, 30, 25, 40, 39, 50, 60]
-      }
-    ]
-  },
-  {
-    title: 'Revenue',
-    value: '$28,452',
-    change: '+0.2%',
-    colors: ['#78d7b4', '#f0a'],
     chartOptions: {
+      colors: ['#78d7b4', '#FF6969'], // Green and Red colors
       chart: {
-        id: 'revenue_chart',
+        id: 'project_a_chart',
         sparkline: {
           enabled: true
         }
@@ -166,22 +185,32 @@ const metrics = ref([
     chartData: [
       {
         name: 'Revenue',
-        data: [50, 60, 70, 80, 90, 100, 110]
+        data: [30, 40, 35, 50, 49, 60, 70]
       },
       {
-        name: 'Projected Revenue',
-        data: [40, 50, 60, 70, 80, 90, 100]
+        name: 'Expenses',
+        data: [20, 30, 25, 40, 39, 50, 60]
       }
     ]
   },
   {
-    title: 'Average Price',
-    value: '$16.2',
-    change: '+0.0%',
-    colors: ['#78d7b4', '#f0a'],
+    title: 'Project B',
+    value: -200,
+    change: '+1.5%',
+    isSimulationGenerated: false,
+    isProfitable: false,
+    stages: {
+      businessModel: true,
+      productService: false,
+      expenses: false,
+      margins: false,
+      simulation: false,
+      businessPlan: false
+    },
     chartOptions: {
+      colors: ['#78d7b4', '#FF6969'], // Green and Red colors
       chart: {
-        id: 'average_price_chart',
+        id: 'project_b_chart',
         sparkline: {
           enabled: true
         }
@@ -198,27 +227,115 @@ const metrics = ref([
     },
     chartData: [
       {
-        name: 'Average Price',
-        data: [10, 20, 15, 25, 22, 30, 28]
+        name: 'Revenue',
+        data: [10, 20, 30, 40, 50, 60, 70]
       },
       {
-        name: 'Projected Price',
-        data: [8, 18, 13, 23, 20, 28, 26]
+        name: 'Expenses',
+        data: [20, 30, 40, 50, 60, 70, 80]
+      }
+    ]
+  },
+  {
+    title: 'Project C',
+    value: -500,
+    change: '+3.0%',
+    isSimulationGenerated: true,
+    isProfitable: false,
+    stages: {
+      businessModel: true,
+      productService: true,
+      expenses: true,
+      margins: true,
+      simulation: true,
+      businessPlan: true
+    },
+    chartOptions: {
+      colors: ['#78d7b4', '#FF6969'], // Green and Red colors
+      chart: {
+        id: 'project_c_chart',
+        sparkline: {
+          enabled: true
+        }
+      },
+      stroke: {
+        curve: 'smooth'
+      },
+      markers: {
+        size: 0
+      },
+      xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
+      }
+    },
+    chartData: [
+      {
+        name: 'Revenue',
+        data: [20, 30, 40, 50, 60, 70, 80]
+      },
+      {
+        name: 'Expenses',
+        data: [30, 40, 50, 60, 70, 80, 90]
+      }
+    ]
+  },
+  {
+    title: 'Project D',
+    value: 500,
+    change: '+4.5%',
+    isSimulationGenerated: true,
+    isProfitable: true,
+    stages: {
+      businessModel: true,
+      productService: true,
+      expenses: true,
+      margins: true,
+      simulation: true,
+      businessPlan: true
+    },
+    chartOptions: {
+      colors: ['#78d7b4', '#FF6969'], // Green and Red colors
+      chart: {
+        id: 'project_d_chart',
+        sparkline: {
+          enabled: true
+        }
+      },
+      stroke: {
+        curve: 'smooth'
+      },
+      markers: {
+        size: 0
+      },
+      xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
+      }
+    },
+    chartData: [
+      {
+        name: 'Revenue',
+        data: [40, 50, 60, 70, 80, 90, 100]
+      },
+      {
+        name: 'Expenses',
+        data: [20, 25, 30, 35, 40, 45, 50]
       }
     ]
   }
 ])
 
-const isClient = ref(false)
+const isProjectCompleted = stages => {
+  return Object.values(stages).every(stage => stage)
+}
 
 onMounted(() => {
-  isClient.value = true
-  // window.addEventListener('resize', updateCharts)
   mittBus.on('update-charts', updateCharts) // Listen for the custom event
+  setTimeout(() => {
+    updateCharts() // Update the charts after a delay
+  }, 500)
 })
 
 onUnmounted(() => {
-  // window.removeEventListener('resize', updateCharts)
   mittBus.off('update-charts', updateCharts) // Clean up the event listener
 })
 
@@ -238,6 +355,7 @@ const updateCharts = () => {
   background-color: #fff;
   border-radius: 0.375rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 2px solid transparent;
 }
 .card-body {
   padding: 1rem;
@@ -251,5 +369,36 @@ const updateCharts = () => {
 .chart-placeholder {
   width: 100%;
   height: 150px;
+}
+.timeline {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  padding-left: 1.5rem;
+}
+.timeline li {
+  padding: 0.5rem 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.timeline li:before {
+  content: '';
+  position: absolute;
+  left: -15px;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  background-color: #ccc;
+}
+.timeline li.completed:before {
+  background-color: #78d7b4;
+}
+.timeline li span {
+  margin-left: 20px;
+}
+.stage {
+  margin-bottom: 0.5rem;
 }
 </style>
