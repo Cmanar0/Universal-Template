@@ -4,20 +4,19 @@
     <GlobalSpinner />
     <Notification class="z-index-1100" />
 
-    <!-- ------------- Navbar start ------------- -->
+    <!-- Navbar start -->
     <div class="nav-bar">
       <header class="bg-gray-800 text-white p-5">
         <span>
           <hamburger class="ham hover:text-gray-300" @click="toggleMenu" />
         </span>
         <button @click="triggerNotification">Trigger Notification</button>
-
         <a
           href="#"
           class="text-white text-2xl font-semibold uppercase hover:text-gray-300"
           >Logo</a
         >
-        <!-- ------------- User Dropdown Menu start ------------- -->
+        <!-- User Dropdown Menu start -->
         <div>
           <div class="relative inline-block">
             <div
@@ -63,13 +62,13 @@
             @click="closeDropdown"
           ></div>
         </div>
-        <!-- ------------- User Dropdown Menu end ------------- -->
+        <!-- User Dropdown Menu end -->
       </header>
     </div>
+    <!-- Navbar end -->
 
-    <!-- ------------- Navbar end ------------- -->
     <div class="flex">
-      <!-- ------------- Sidebar start ------------- -->
+      <!-- Sidebar start -->
       <div
         :class="{
           menuClosed: !mennuOpen,
@@ -132,8 +131,9 @@
           </a>
         </nav>
       </div>
-      <!-- ------------- Sidebar end ------------- -->
-      <!-- ------------- Main content start ------------- -->
+      <!-- Sidebar end -->
+
+      <!-- Main content start -->
       <main
         :class="{
           'main-margin-desktop-menu-closed': !mennuOpen && !isMobile,
@@ -143,7 +143,7 @@
       >
         <NuxtPage />
       </main>
-      <!-- ------------- Main content end ------------- -->
+      <!-- Main content end -->
     </div>
   </div>
 </template>
@@ -157,12 +157,13 @@ import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Notification from '@/components/Notification.vue'
 import { addNotification } from '@/stores/notificationStore'
+import mittBus from '../utils/mitt.js'
 
 // Variables:
 const router = useRouter()
 const windowWidth = ref(0)
 
-// ------------- User Dropdown Menu start ------------- :
+// User Dropdown Menu start
 const logout = () => {
   Cookies.remove('bv_jwt')
   router.push('/')
@@ -175,14 +176,19 @@ const toggleDropdown = () => {
 const closeDropdown = () => {
   isOpen.value = false
 }
-// ------------- User Dropdown Menu end -------------
-// ------------- toggle menu on mobile start ------------- :
+// User Dropdown Menu end
+
+// Toggle menu on mobile start
 const mennuOpen = ref(false)
 const delayedMenuClosed = ref(false)
 let closeMenuTimeout = null
 
 const toggleMenu = () => {
   mennuOpen.value = !mennuOpen.value
+  setTimeout(() => {
+    mittBus.emit('update-charts') // Emit update-charts event
+    // window.dispatchEvent(new Event('resize')) // Trigger a resize event
+  }, 400) // Adjust the timeout as necessary to match your transition duration
 }
 
 // Watch for changes in mennuOpen and update delayedMenuClosed
@@ -201,17 +207,18 @@ watch(mennuOpen, newValue => {
   }
 })
 
-// ------------- toggle menu on mobile end -------------
-// ------------- notification logic start ------------- :
+// Toggle menu on mobile end
 
+// Notification logic start
 const triggerNotification = () => {
   addNotification({
     title: 'Notification',
     message: 'This is a notification message'
   })
 }
-// ------------- notification logic end -------------
-// ------------- update window width start ------------- :
+// Notification logic end
+
+// Update window width start
 const updateWidth = () => {
   windowWidth.value = window.innerWidth
 }
@@ -219,7 +226,7 @@ const isMobile = computed(() => {
   return windowWidth.value < 768
 })
 
-// ------------- update window width end -------------
+// Update window width end
 onMounted(() => {
   window.addEventListener('resize', updateWidth)
   updateWidth()
@@ -237,7 +244,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* -------------- Navbar start -------------- */
+/* Navbar start */
 .nav-bar header {
   display: flex;
   justify-content: space-between;
@@ -260,8 +267,8 @@ onUnmounted(() => {
   background-color: #fff;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
 }
-/* -------------- Navbar end -------------- */
-/* -------------- Main content start -------------- */
+/* Navbar end */
+/* Main content start */
 main {
   margin-top: 80px;
   width: 100%;
@@ -279,8 +286,8 @@ main {
   margin-left: 260px;
   transition: margin-left 0.5s;
 }
-/* -------------- Main content end -------------- */
-/* -------------- Sidebar start -------------- */
+/* Main content end */
+/* Sidebar start */
 .menu {
   width: 260px;
   transition: width 0.5s;
@@ -337,5 +344,5 @@ main {
 .z-index-1100 {
   z-index: 1100;
 }
-/* -------------- Sidebar end -------------- */
+/* Sidebar end */
 </style>

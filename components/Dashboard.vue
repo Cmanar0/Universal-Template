@@ -61,14 +61,16 @@
               <h4 class="text-[19px] leading-5 mt-3">{{ metric.value }}</h4>
             </div>
             <div>
-              <apexchart
-                v-if="isClient"
-                :options="metric.chartOptions"
-                :series="metric.chartData"
-                type="area"
-                height="150"
-                class="chart-placeholder"
-              ></apexchart>
+              <client-only>
+                <apexchart
+                  ref="apexChartsRef"
+                  :options="metric.chartOptions"
+                  :series="metric.chartData"
+                  type="area"
+                  height="150"
+                  class="chart-placeholder"
+                ></apexchart>
+              </client-only>
             </div>
           </div>
         </div>
@@ -89,7 +91,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { defineAsyncComponent } from 'vue'
+import mittBus from '../utils/mitt.js'
+
+const ApexCharts = defineAsyncComponent(() => import('vue3-apexcharts'))
 
 const user = ref({
   name: 'Henry Wells',
@@ -207,7 +213,24 @@ const isClient = ref(false)
 
 onMounted(() => {
   isClient.value = true
+  // window.addEventListener('resize', updateCharts)
+  mittBus.on('update-charts', updateCharts) // Listen for the custom event
 })
+
+onUnmounted(() => {
+  // window.removeEventListener('resize', updateCharts)
+  mittBus.off('update-charts', updateCharts) // Clean up the event listener
+})
+
+const apexChartsRef = ref([])
+
+const updateCharts = () => {
+  apexChartsRef.value.forEach(chartComponent => {
+    if (chartComponent && chartComponent.updateOptions) {
+      chartComponent.updateOptions(chartComponent.options)
+    }
+  })
+}
 </script>
 
 <style scoped>

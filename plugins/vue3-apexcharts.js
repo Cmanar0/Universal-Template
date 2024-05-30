@@ -1,8 +1,9 @@
 import { defineNuxtPlugin } from '#app'
 
-export default defineNuxtPlugin(async nuxtApp => {
+export default defineNuxtPlugin(nuxtApp => {
   if (process.client) {
-    const VueApexCharts = (await import('vue3-apexcharts')).default
-    nuxtApp.vueApp.use(VueApexCharts)
+    import('vue3-apexcharts').then(module => {
+      nuxtApp.vueApp.use(module.default)
+    })
   }
 })
