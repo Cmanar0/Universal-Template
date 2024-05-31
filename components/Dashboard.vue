@@ -172,7 +172,8 @@ const projects = ref([
       businessPlan: true
     },
     chartOptions: {
-      colors: ['#78d7b4', '#FF6969'], // Green and Red colors
+      colors: ['#34C28F', '#556EE5'], // red #F46969
+
       chart: {
         id: 'project_a_chart',
         sparkline: {
@@ -215,7 +216,7 @@ const projects = ref([
       businessPlan: false
     },
     chartOptions: {
-      colors: ['#78d7b4', '#FF6969'], // Green and Red colors
+      colors: ['#34C28F', '#556EE5'], //red #F46969
       chart: {
         id: 'project_b_chart',
         sparkline: {
@@ -258,7 +259,7 @@ const projects = ref([
       businessPlan: true
     },
     chartOptions: {
-      colors: ['#78d7b4', '#FF6969'], // Green and Red colors
+      colors: ['#34C28F', '#556EE5'], // Green and Red colors #F46969
       chart: {
         id: 'project_c_chart',
         sparkline: {
@@ -301,7 +302,7 @@ const projects = ref([
       businessPlan: true
     },
     chartOptions: {
-      colors: ['#78d7b4', '#FF6969'], // Green and Red colors
+      colors: ['#34C28F', '#556EE5'], // Green and Red colors #F46969
       chart: {
         id: 'project_d_chart',
         sparkline: {
