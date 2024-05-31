@@ -1,8 +1,13 @@
-import { defineNuxtRouteMiddleware, useCookie, useNuxtApp } from '#app'
+import {
+  defineNuxtRouteMiddleware,
+  useCookie,
+  useNuxtApp,
+  navigateTo
+} from '#app'
 import Cookies from 'js-cookie'
 import apiService from '../services/api-request' // Update the path as necessary
 
-export default defineNuxtRouteMiddleware(async (to, from, next) => {
+export default defineNuxtRouteMiddleware(async (to, from) => {
   console.log('Middleware is running')
 
   const app = useNuxtApp()
@@ -38,7 +43,7 @@ export default defineNuxtRouteMiddleware(async (to, from, next) => {
       const {
         public: { baseApiUrl }
       } = app.$config
-      await renewToken(token, app, baseApiUrl)
+      await renewToken(token, baseApiUrl)
     } catch (error) {
       console.error('Error renewing the token:', error)
       return navigateTo('/') // Fail safely by redirecting to login
@@ -60,16 +65,15 @@ function getJwtClaims(token) {
   }
 }
 
-async function renewToken(token, app, baseApiUrl) {
+async function renewToken(token, baseApiUrl) {
   try {
     const response = await apiService.post(
       'auth/refresh-token', // Endpoint without base URL
-      {},
-      {},
-      {},
+      {}, // Empty data payload
+      {}, // Empty params
+      { 'x-auth-token': token }, // Custom header with the token
       baseApiUrl // Pass base URL here
     )
-    // console.log('response :>> ', response);
 
     // Assuming the new token is returned directly in the response body under 'jwt'
     if (process.server) {

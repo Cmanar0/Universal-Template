@@ -1,10 +1,16 @@
+// services/api-request.ts
+
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import { addError } from '../stores/errorsStore' // Update the path as necessary
 import mittBus from '../utils/mitt.js'
 
+// Get the base URL from the runtime configuration
+const baseURL = process.env.baseApiUrl || ''
+
 // Create an Axios instance
 const api = axios.create({
+  baseURL, // Set the base URL here
   headers: {
     'Content-Type': 'application/json'
   }
@@ -14,6 +20,7 @@ const api = axios.create({
 api.interceptors.request.use(
   config => {
     const token = Cookies.get('bv_jwt')
+    console.log('token :>> ', token)
     if (token) {
       config.headers['x-auth-token'] = token // Assuming the token should be sent as 'x-auth-token'
     }
@@ -21,7 +28,6 @@ api.interceptors.request.use(
   },
   error => Promise.reject(error)
 )
-
 api.interceptors.response.use(
   response => response,
   error => {
