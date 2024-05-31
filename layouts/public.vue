@@ -6,6 +6,11 @@
     <ModalOneBtn />
     <GlobalSpinner />
 
+    <!-- <v-app>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </v-app> -->
     <NuxtPage />
   </div>
 </template>

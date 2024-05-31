@@ -1,3 +1,4 @@
+// src/stores/notificationStore.js
 import { ref } from 'vue'
 
 const state = {

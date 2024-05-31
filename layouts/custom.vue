@@ -10,12 +10,7 @@
         <span>
           <hamburger class="ham hover:text-gray-300" @click="toggleMenu" />
         </span>
-        <button @click="triggerNotification">Trigger Notification</button>
-        <a
-          href="#"
-          class="text-white text-2xl font-semibold uppercase hover:text-gray-300"
-          >Logo</a
-        >
+
         <!-- User Dropdown Menu start -->
         <div>
           <div class="relative inline-block">
@@ -141,6 +136,11 @@
           'main-margin-mobile-menu-closed': !mennuOpen && isMobile
         }"
       >
+        <!-- <v-app>
+          <NuxtLayout>
+            <NuxtPage />
+          </NuxtLayout>
+        </v-app> -->
         <NuxtPage />
       </main>
       <!-- Main content end -->
@@ -155,10 +155,8 @@ import GlobalSpinner from '../components/reusable/GlobalSpinner.vue'
 import Cookies from 'js-cookie'
 import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import Notification from '@/components/Notification.vue'
-import { addNotification } from '@/stores/notificationStore'
 import mittBus from '../utils/mitt.js'
-
+import Notification from '../components/reusable/Notification.vue' // Import Notification
 // Variables:
 const router = useRouter()
 const windowWidth = ref(0)
@@ -206,17 +204,7 @@ watch(mennuOpen, newValue => {
     }, 1000)
   }
 })
-
 // Toggle menu on mobile end
-
-// Notification logic start
-const triggerNotification = () => {
-  addNotification({
-    title: 'Notification',
-    message: 'This is a notification message'
-  })
-}
-// Notification logic end
 
 // Update window width start
 const updateWidth = () => {
@@ -225,8 +213,8 @@ const updateWidth = () => {
 const isMobile = computed(() => {
   return windowWidth.value < 768
 })
-
 // Update window width end
+
 onMounted(() => {
   window.addEventListener('resize', updateWidth)
   updateWidth()
