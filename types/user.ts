@@ -1,7 +1,11 @@
 // src/types/user.ts
 export interface User {
-  id: number
-  username: string
+  id: string
   email: string
-  password: string
+  firstName: string | null
+  lastName: string | null
+  lang: string
+  isActive: boolean
+  registeredAt: string
+  updatedAt: string
 }
