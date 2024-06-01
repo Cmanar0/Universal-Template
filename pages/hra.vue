@@ -1,8 +1,7 @@
 <template>
   <v-app>
-    <v-main>
+    <v-main class="bg">
       <v-row class="mb-32">
-        <!-- Added margin-bottom to avoid overlapping -->
         <v-col cols="12" md="6">
           <player-manager
             :weapons="weapons"
@@ -17,32 +16,30 @@
             :enemies="enemies"
             :weapons="weapons"
             :armors="armors"
+            :battle-log="battleLog"
+            @update-battle-log="updateBattleLog"
           />
         </v-col>
       </v-row>
-      <!-- <battle-log :logs="battleLog" /> -->
     </v-main>
+    <Notification class="z-index-1100" />
   </v-app>
-  <Notification class="z-index-1100" />
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import PlayerManager from '../components/dnd/PlayerManager.vue'
 import BattleSimulator from '../components/dnd/BattleSimulator.vue'
-import BattleLog from '../components/dnd/BattleLog.vue'
-import Notification from '../components/reusable/Notification.vue' // Import Notification
+import Notification from '../components/reusable/Notification.vue'
 
 const weapons = ref([
   { id: 1, name: 'Prak', stats: 6, type: 'weapon' },
   { id: 2, name: 'Stříbrná dýka', stats: 8, type: 'weapon' }
-  // Add other weapons here...
 ])
 
 const armors = ref([
   { id: 1, name: 'Mystické roucho', stats: 5, type: 'armor' },
   { id: 2, name: 'Ledové roucho', stats: 6, type: 'armor' }
-  // Add other armors here...
 ])
 
 const players = ref([
@@ -92,6 +89,10 @@ const battleLog = ref([])
 const updatePlayers = newPlayers => {
   players.value = newPlayers
 }
+
+const updateBattleLog = newLogs => {
+  battleLog.value = newLogs
+}
 </script>
 
 <style>
@@ -99,5 +100,8 @@ const updatePlayers = newPlayers => {
 
 .mb-32 {
   margin-bottom: 8rem;
+}
+.bg {
+  background-color: #4f2c1228;
 }
 </style>

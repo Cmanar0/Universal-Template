@@ -1,48 +1,26 @@
 <template>
-  <v-card-text>
+  <div class="">
     <div
       v-for="(player, index) in players"
       :key="index"
-      class="mb-4 p-4 border rounded"
+      class="m-4 p-4 border bg-white shadow-md rounded-lg"
     >
       <div v-if="editIndex === index">
         <v-text-field v-model="player.name" label="Player Name" />
         <v-text-field v-model="player.hp" label="HP" type="number" />
         <v-text-field v-model="player.maxHP" label="Max HP" type="number" />
         <v-text-field v-model="player.gold" label="Gold" type="number" />
-        <v-select
-          v-model="player.weapon"
-          :items="weaponOptions"
-          item-title="name"
-          item-value="id"
-          label="Weapon"
-          density="comfortable"
-          return-object
-          persistent-hint
-        />
-        <v-select
-          v-model="player.armor"
-          :items="armorOptions"
-          item-title="name"
-          item-value="id"
-          label="Armor"
-          density="comfortable"
-          return-object
-          persistent-hint
-        />
         <v-btn color="success" @click="savePlayer(index)">Save</v-btn>
         <v-btn color="error ml-2" @click="removePlayer(index)">Remove</v-btn>
       </div>
       <div v-else>
         <div class="flex justify-between mb-4">
           <div>
-            <div class="flex column mb-4">
-              <div>
-                <h1 class="text-2xl font-bold">{{ player.name }}</h1>
-              </div>
-              <div class="ml-4">
-                <v-btn color="primary" @click="editIndex = index">Edit</v-btn>
-              </div>
+            <div class="flex items-center mb-4">
+              <h1 class="text-2xl font-bold">{{ player.name }}</h1>
+              <v-btn class="ml-4" color="primary" @click="editIndex = index"
+                >Edit</v-btn
+              >
             </div>
             <p class="flex items-center">
               <strong>HP:</strong>
@@ -57,24 +35,22 @@
               ></div>
             </div>
           </div>
-          <div>
-            <div class="flex flex-col items-end space-y-2">
-              <div class="flex items-center space-x-2">
-                <strong>Gold:</strong>
-                <span class="text-yellow-600 bg-yellow-100 p-1 rounded">{{
-                  player.gold
-                }}</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <strong>Weapon:</strong>
-                <span class="text-blue-600">{{ player.weapon.name }}</span>
-                <span>(Stats: {{ player.weapon.stats }})</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <strong>Armor:</strong>
-                <span class="text-blue-400">{{ player.armor.name }}</span>
-                <span>(Stats: {{ player.armor.stats }})</span>
-              </div>
+          <div class="flex flex-col items-end space-y-2">
+            <div class="flex items-center space-x-2">
+              <strong>Gold:</strong>
+              <span class="text-yellow-600 bg-yellow-100 p-1 rounded">{{
+                player.gold
+              }}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <strong>Weapon:</strong>
+              <span class="text-blue-600">{{ player.weapon.name }}</span>
+              <span>(Stats: {{ player.weapon.stats }})</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <strong>Armor:</strong>
+              <span class="text-blue-400">{{ player.armor.name }}</span>
+              <span>(Stats: {{ player.armor.stats }})</span>
             </div>
           </div>
         </div>
@@ -190,7 +166,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-card-text>
+  </div>
 </template>
 
 <script setup>
@@ -363,33 +339,6 @@ watch(props.players, newPlayers => {
 .border {
   border: 1px solid #ddd;
 }
-.v-row {
-  display: flex;
-  flex-wrap: wrap;
-  margin: -16px;
-}
-.v-col {
-  padding: 16px;
-}
-.v-btn {
-  margin: 4px 0;
-}
-.v-simple-table {
-  margin-top: 16px;
-  font-size: 0.875rem; /* Smaller text for table */
-}
-.selected {
-  background-color: #e0e0e0;
-}
-.weapon {
-  color: blue;
-}
-.armor {
-  color: #1e90ff; /* Lighter blue color */
-}
-.healing {
-  color: green;
-}
 .inventory-table th,
 .inventory-table td {
   padding: 4px 8px;
@@ -398,11 +347,11 @@ watch(props.players, newPlayers => {
   padding: 2px;
   margin: 0 2px;
   min-width: 24px;
-  height: 24px; /* Smaller height for action buttons */
-  border-radius: 50%; /* Make the buttons circular */
+  height: 24px;
+  border-radius: 50%;
 }
 .v-icon {
-  font-size: 12px; /* Smaller icons */
+  font-size: 12px;
 }
 .actions .v-btn:hover {
   background-color: #ddd;
