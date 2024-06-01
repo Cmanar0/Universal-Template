@@ -23,6 +23,15 @@
               <v-btn class="ml-4" color="primary" @click="editIndex = index"
                 >Edit</v-btn
               >
+              <v-btn
+                class="ml-4"
+                color="secondary"
+                @click="openRestModal(index)"
+                >Rest</v-btn
+              >
+              <v-btn class="ml-4" color="warning" @click="openPayModal(index)"
+                >Pay</v-btn
+              >
             </div>
             <p class="flex items-center">
               <strong>HP:</strong>
@@ -57,7 +66,9 @@
           </div>
         </div>
       </div>
-      <v-btn color="primary" @click="openModal(index)" block>ADD ITEM</v-btn>
+      <div class="flex space-x-2 mb-2">
+        <v-btn color="primary" @click="openModal(index)" block>ADD ITEM</v-btn>
+      </div>
       <div class="overflow-x-auto mt-4">
         <table class="min-w-full divide-y divide-gray-200 inventory-table">
           <thead class="bg-gray-50">
@@ -168,11 +179,56 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="isRestModalOpen" max-width="500px">
+      <v-card>
+        <v-card-title>Rest</v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model.number="restHours"
+            label="Enter hours to rest"
+            type="number"
+            min="1"
+            step="1"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="applyRest">Rest</v-btn>
+          <v-btn color="error" @click="isRestModalOpen = false">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="isPayModalOpen" max-width="500px">
+      <v-card>
+        <v-card-title>Pay</v-card-title>
+        <v-card-text>
+          <p class="mb-4">
+            <strong>{{ players[payPlayerIndex]?.name }}'s Gold:</strong>
+            <span>{{ players[payPlayerIndex]?.gold }}</span>
+          </p>
+          <v-text-field
+            v-model.number="payAmount"
+            label="Enter amount to pay"
+            type="number"
+            min="10"
+            step="10"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="primary"
+            @click="applyPay"
+            :disabled="payAmount > players[payPlayerIndex]?.gold"
+            >Pay</v-btn
+          >
+          <v-btn color="error" @click="closePayModal">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { addNotification } from '../stores/notificationStore'
 
 const props = defineProps({
@@ -188,11 +244,28 @@ const props = defineProps({
 const emit = defineEmits(['players-updated'])
 
 const isModalOpen = ref(false)
+const isRestModalOpen = ref(false)
+const isPayModalOpen = ref(false)
+const restHours = ref(1)
+const payAmount = ref(10)
 const editIndex = ref(null)
 const newItem = ref({ name: '', type: 'other', stats: 0, quantity: 1 })
 const modalPlayerIndex = ref(null)
+const restPlayerIndex = ref(null)
+const payPlayerIndex = ref(null)
 
 const players = ref([...props.players])
+
+onMounted(() => {
+  const storedPlayers = localStorage.getItem('players')
+  if (storedPlayers) {
+    players.value = JSON.parse(storedPlayers)
+  }
+})
+
+const saveToLocalStorage = () => {
+  localStorage.setItem('players', JSON.stringify(players.value))
+}
 
 const addPlayer = () => {
   players.value.push({
@@ -204,15 +277,18 @@ const addPlayer = () => {
     armor: { id: null, name: '', stats: 0, type: 'armor' },
     inventory: []
   })
+  saveToLocalStorage()
 }
 
 const removePlayer = index => {
   players.value.splice(index, 1)
+  saveToLocalStorage()
 }
 
 const savePlayer = index => {
   editIndex.value = null
   emit('players-updated', players.value)
+  saveToLocalStorage()
 }
 
 const openModal = index => {
@@ -238,6 +314,7 @@ const addItem = () => {
     })
     isModalOpen.value = false
     emit('players-updated', players.value)
+    saveToLocalStorage()
     console.log(`Updated players: ${JSON.stringify(players.value)}`)
   }
 }
@@ -270,6 +347,7 @@ const selectItem = (playerIndex, itemIndex) => {
     color: 'blue'
   })
   emit('players-updated', players.value)
+  saveToLocalStorage()
   console.log(
     `Updated players after selecting item: ${JSON.stringify(players.value)}`
   )
@@ -290,6 +368,7 @@ const useHealingItem = (playerIndex, itemIndex) => {
     color: 'green'
   })
   emit('players-updated', players.value)
+  saveToLocalStorage()
   console.log(
     `Updated players after using healing item: ${JSON.stringify(players.value)}`
   )
@@ -304,6 +383,51 @@ const deleteItem = (playerIndex, itemIndex) => {
     color: 'gray'
   })
   emit('players-updated', players.value)
+  saveToLocalStorage()
+}
+
+const openRestModal = index => {
+  restPlayerIndex.value = index
+  isRestModalOpen.value = true
+}
+
+const applyRest = () => {
+  const player = players.value[restPlayerIndex.value]
+  player.hp = Math.min(player.hp + restHours.value * 3, player.maxHP)
+  addNotification({
+    title: 'Rest',
+    message: `${player.name} rested for ${
+      restHours.value
+    } hours and recovered ${restHours.value * 3} HP`,
+    color: 'green'
+  })
+  isRestModalOpen.value = false
+  emit('players-updated', players.value)
+  saveToLocalStorage()
+}
+
+const openPayModal = index => {
+  payPlayerIndex.value = index
+  isPayModalOpen.value = true
+}
+
+const applyPay = () => {
+  const player = players.value[payPlayerIndex.value]
+  player.gold -= payAmount.value
+  addNotification({
+    title: 'Pay',
+    message: `${player.name} paid ${payAmount.value} gold`,
+    color: 'yellow'
+  })
+  isPayModalOpen.value = false
+  payAmount.value = 10 // Reset the pay amount
+  emit('players-updated', players.value)
+  saveToLocalStorage()
+}
+
+const closePayModal = () => {
+  isPayModalOpen.value = false
+  payAmount.value = 10 // Reset the pay amount
 }
 
 const getItemIcon = type => {
@@ -331,6 +455,10 @@ const getItemClass = type => {
       return 'bg-gray-500 text-white'
   }
 }
+
+watch(players, newPlayers => {
+  saveToLocalStorage()
+})
 
 watch(props.players, newPlayers => {
   players.value = [...newPlayers]
