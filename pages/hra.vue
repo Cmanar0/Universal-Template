@@ -48,18 +48,24 @@ const players = ref([
     hp: 47,
     maxHP: 100,
     gold: 100,
-    weapon: { id: 1, name: 'Prak', stats: 6, type: 'weapon' },
-    armor: { id: 1, name: 'Mystické roucho', stats: 5, type: 'armor' },
-    inventory: []
+    weapon: {},
+    armor: {},
+    inventory: [
+      { id: 1, name: 'Prak', stats: 6, type: 'weapon' },
+      { id: 1, name: 'Mystické roucho', stats: 5, type: 'armor' }
+    ]
   },
   {
     name: 'Player 2',
     hp: 60,
     maxHP: 75,
     gold: 150,
-    weapon: { id: 2, name: 'Stříbrná dýka', stats: 8, type: 'weapon' },
-    armor: { id: 2, name: 'Ledové roucho', stats: 6, type: 'armor' },
-    inventory: []
+    weapon: {},
+    armor: {},
+    inventory: [
+      { id: 2, name: 'Stříbrná dýka', stats: 8, type: 'weapon' },
+      { id: 2, name: 'Ledové roucho', stats: 6, type: 'armor' }
+    ]
   }
 ])
 

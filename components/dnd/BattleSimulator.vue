@@ -1,36 +1,56 @@
 <template>
   <v-card-text>
-    <v-row class="align-center">
-      <v-col cols="9">
-        <v-select
-          v-model="selectedParticipant"
-          :items="allParticipants"
-          item-title="name"
-          item-value="id"
-          label="Select Participant to Add"
-          density="comfortable"
-          return-object
-          persistent-hint
-        />
-      </v-col>
-      <v-col cols="3">
-        <v-btn
-          color="primary"
-          @click="addToBattle"
-          :disabled="!selectedParticipant"
-          >Add to Battle</v-btn
-        >
-      </v-col>
-    </v-row>
-    <v-btn
-      color="red darken-3"
-      class="attack-button my-4"
-      @click="simulateAttack"
-      :disabled="attackerIndex === null || defenderIndex === null"
-      block
-    >
-      ATTACK
-    </v-btn>
+    <v-card class="p-4">
+      <v-row class="align-center">
+        <v-col cols="9">
+          <v-select
+            v-model="selectedParticipant"
+            :items="allParticipants"
+            item-title="name"
+            item-value="id"
+            label="Select Participant to Add"
+            density="comfortable"
+            return-object
+            persistent-hint
+          />
+        </v-col>
+        <v-col cols="3">
+          <v-btn
+            color="primary"
+            @click="addToBattle"
+            :disabled="!selectedParticipant"
+            >Add to Battle</v-btn
+          >
+        </v-col>
+      </v-row>
+      <v-row class="align-center my-4">
+        <v-col cols="3">
+          <v-text-field
+            v-model.number="inputNumber"
+            label="Dice Roll"
+            type="number"
+            :min="1"
+            :max="6"
+            :disabled="attackerIndex === null || defenderIndex === null"
+          />
+        </v-col>
+        <v-col cols="9">
+          <v-btn
+            color="red darken-3"
+            class="attack-button"
+            @click="simulateAttack"
+            :disabled="
+              attackerIndex === null ||
+              defenderIndex === null ||
+              inputNumber === null
+            "
+            block
+          >
+            ATTACK
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-card>
     <div class="mt-4">
       <h3 class="text-xl text-center mb-4">Participants in Battle</h3>
       <v-row>
@@ -53,8 +73,20 @@
             <v-card-text>
               <p>
                 <strong>HP:</strong> {{ participant.hp }} /
-                {{ participant.maxHP }}
+                {{ participant.maxHP }} ({{
+                  (participant.hp / participant.maxHP) * 100
+                }}%)
               </p>
+              <div
+                class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2 min-w-80"
+              >
+                <div
+                  class="absolute top-0 left-0 h-full bg-green-500"
+                  :style="{
+                    width: (participant.hp / participant.maxHP) * 100 + '%'
+                  }"
+                ></div>
+              </div>
               <p>
                 <strong>Weapon:</strong>
                 {{ participant.weapon.name }} (Stats:
@@ -118,6 +150,7 @@ const battleParticipants = ref([])
 const attackerIndex = ref(null)
 const defenderIndex = ref(null)
 const battleLog = ref([])
+const inputNumber = ref(null)
 
 const allParticipants = computed(() => {
   const allEntities = [...props.players, ...props.enemies]
@@ -167,24 +200,17 @@ const setAsDefender = index => {
 }
 
 const simulateAttack = () => {
-  if (attackerIndex.value === null || defenderIndex.value === null) return
+  if (
+    attackerIndex.value === null ||
+    defenderIndex.value === null ||
+    inputNumber.value === null
+  )
+    return
 
   const attacker = battleParticipants.value[attackerIndex.value]
   const defender = battleParticipants.value[defenderIndex.value]
 
-  if (attacker.name === defender.name) {
-    battleLog.value.unshift(
-      `<span class="text-red-600">${attacker.name} cannot attack themselves!</span>`
-    )
-    addNotification({
-      title: 'Invalid Attack',
-      message: `${attacker.name} cannot attack themselves!`,
-      color: 'red'
-    })
-    return
-  }
-
-  const diceRoll = Math.floor(Math.random() * 6) + 1
+  const diceRoll = inputNumber.value
   const totalAttack = diceRoll + attacker.weapon.stats
   const totalDefense = defender.armor.stats
   const damage = totalAttack >= totalDefense ? totalAttack - totalDefense : 0
@@ -192,7 +218,7 @@ const simulateAttack = () => {
   defender.hp -= damage
 
   battleLog.value.unshift(
-    `<span class="text-blue-500">${attacker.name} rolls a dice: ${diceRoll}</span> + 
+    `<span class="text-blue-500">${attacker.name} used input: ${diceRoll}</span> + 
     <span class="text-red-500">${attacker.weapon.name} attack: ${attacker.weapon.stats}</span> = 
     <span class="text-green-500">Total attack: ${totalAttack}</span> - 
     <span class="text-orange-500">${defender.name}'s ${defender.armor.name} defense: ${defender.armor.stats}</span> = 
@@ -244,6 +270,9 @@ const simulateAttack = () => {
   if (originalAttacker) {
     originalAttacker.gold = attacker.gold
   }
+
+  // Clear the input field
+  inputNumber.value = null
 }
 
 watch(props.players, newPlayers => {
