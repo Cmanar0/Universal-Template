@@ -94,7 +94,7 @@
                 Amount
               </th>
               <th
-                class="px-6 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-2 whitespace-nowrap text-sm font-medium actions"
               >
                 -
               </th>
@@ -118,7 +118,7 @@
               <td class="px-6 py-2 whitespace-nowrap">{{ item.stats }}</td>
               <td class="px-6 py-2 whitespace-nowrap">{{ item.quantity }}</td>
               <td
-                class="px-6 py-2 whitespace-nowrap text-sm font-medium actions text-right"
+                class="px-6 py-2 whitespace-nowrap text-sm font-medium actions"
               >
                 <button
                   class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -145,7 +145,7 @@
                   <v-icon class="text-red-500">mdi-close</v-icon>
                 </button>
                 <button
-                  class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                  class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 bg-yellow-500"
                   @click="openSellModal(index, iIndex)"
                 >
                   <span class="sr-only">Sell</span>
@@ -241,7 +241,7 @@
           </p>
           <v-text-field
             v-model.number="sellAmount"
-            label="Enter amount to sell for"
+            label="Enter amount to sell item for"
             type="number"
             min="10"
             step="10"
@@ -364,18 +364,17 @@ const selectItem = (playerIndex, itemIndex) => {
       player.armor = { id: null, name: '', stats: 0, type: 'armor' }
     }
   } else {
-    if (item.type === 'weapon') {
+    if (item.type !== 'other') {
       player.inventory.forEach((invItem, iIndex) => {
-        if (invItem.type === 'weapon') invItem.selected = false
+        if (invItem.type === item.type) invItem.selected = false
       })
-      player.weapon = { ...item }
-    } else if (item.type === 'armor') {
-      player.inventory.forEach((invItem, iIndex) => {
-        if (invItem.type === 'armor') invItem.selected = false
-      })
-      player.armor = { ...item }
     }
     item.selected = true
+    if (item.type === 'weapon') {
+      player.weapon = { ...item }
+    } else if (item.type === 'armor') {
+      player.armor = { ...item }
+    }
   }
   addNotification({
     title: 'Item Used',
@@ -412,15 +411,23 @@ const useHealingItem = (playerIndex, itemIndex) => {
 
 const deleteItem = (playerIndex, itemIndex) => {
   const item = players.value[playerIndex].inventory[itemIndex]
+
+  // Unselect the item if it's selected
   if (item.selected) {
-    if (item.type === 'weapon') {
+    if (
+      item.type === 'weapon' &&
+      players.value[playerIndex].weapon.id === item.id
+    ) {
       players.value[playerIndex].weapon = {
         id: null,
         name: '',
         stats: 0,
         type: 'weapon'
       }
-    } else if (item.type === 'armor') {
+    } else if (
+      item.type === 'armor' &&
+      players.value[playerIndex].armor.id === item.id
+    ) {
       players.value[playerIndex].armor = {
         id: null,
         name: '',
@@ -429,6 +436,7 @@ const deleteItem = (playerIndex, itemIndex) => {
       }
     }
   }
+
   players.value[playerIndex].inventory.splice(itemIndex, 1)
   addNotification({
     title: 'Item Deleted',
@@ -466,7 +474,7 @@ const openPayModal = index => {
 
 const applyPay = () => {
   const player = players.value[payPlayerIndex.value]
-  player.gold = Number(player.gold) - payAmount.value
+  player.gold -= payAmount.value
   addNotification({
     title: 'Pay',
     message: `${player.name} paid ${payAmount.value} gold`,
@@ -492,11 +500,21 @@ const openSellModal = (playerIndex, itemIndex) => {
 const applySell = () => {
   const player = players.value[sellPlayerIndex.value]
   const item = player.inventory[sellItemIndex.value]
-  player.gold = Number(player.gold) + sellAmount.value
+
+  // Unselect the item if it's selected
+  if (item.selected) {
+    if (item.type === 'weapon' && player.weapon.id === item.id) {
+      player.weapon = { id: null, name: '', stats: 0, type: 'weapon' }
+    } else if (item.type === 'armor' && player.armor.id === item.id) {
+      player.armor = { id: null, name: '', stats: 0, type: 'armor' }
+    }
+  }
+
+  player.gold = Number(player.gold) + Number(sellAmount.value)
   player.inventory.splice(sellItemIndex.value, 1)
   addNotification({
     title: 'Item Sold',
-    message: `${player.name} sold ${item.name} for ${sellAmount.value} gold`,
+    message: `Sold ${item.name} for ${sellAmount.value} gold`,
     color: 'yellow'
   })
   isSellModalOpen.value = false
@@ -553,6 +571,9 @@ watch(props.players, newPlayers => {
 .inventory-table td {
   padding: 4px 8px;
 }
+.inventory-table .actions {
+  text-align: right;
+}
 .actions .v-btn {
   padding: 2px;
   margin: 0 2px;
@@ -565,8 +586,5 @@ watch(props.players, newPlayers => {
 }
 .actions .v-btn:hover {
   background-color: #ddd;
-}
-.inventory-table .actions {
-  text-align: right;
 }
 </style>
