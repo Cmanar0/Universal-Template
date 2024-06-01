@@ -11,7 +11,9 @@
         <v-text-field v-model="player.maxHP" label="Max HP" type="number" />
         <v-text-field v-model="player.gold" label="Gold" type="number" />
         <v-btn color="success" @click="savePlayer(index)">Save</v-btn>
-        <v-btn color="error ml-2" @click="removePlayer(index)">Remove</v-btn>
+        <v-btn disabled="true" color="error ml-2" @click="removePlayer(index)"
+          >Remove</v-btn
+        >
       </div>
       <div v-else>
         <div class="flex justify-between mb-4">

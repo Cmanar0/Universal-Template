@@ -5,14 +5,17 @@
         <v-col cols="9">
           <v-select
             v-model="selectedParticipant"
-            :items="allParticipants"
+            :items="filteredParticipants"
+            :search-input.sync="search"
             item-title="name"
             item-value="id"
             label="Select Participant to Add"
             density="comfortable"
             return-object
             persistent-hint
-          />
+            clearable
+            outlined
+          ></v-select>
         </v-col>
         <v-col cols="3">
           <v-btn
@@ -151,6 +154,7 @@ const attackerIndex = ref(null)
 const defenderIndex = ref(null)
 const battleLog = ref([])
 const inputNumber = ref(null)
+const search = ref('')
 
 const allParticipants = computed(() => {
   const allEntities = [...props.players, ...props.enemies]
@@ -165,11 +169,21 @@ const allParticipants = computed(() => {
   }))
 })
 
+const filteredParticipants = computed(() => {
+  if (!search.value) {
+    return allParticipants.value
+  }
+  return allParticipants.value.filter(participant =>
+    participant.name.toLowerCase().includes(search.value.toLowerCase())
+  )
+})
+
 const addToBattle = () => {
   if (selectedParticipant.value) {
     const newParticipant = { ...selectedParticipant.value }
     battleParticipants.value.push(newParticipant)
     selectedParticipant.value = null
+    search.value = ''
   }
 }
 
