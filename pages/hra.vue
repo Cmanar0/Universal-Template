@@ -1,38 +1,35 @@
 <template>
   <v-app>
     <v-main>
-      <v-container>
-        <v-row>
-          <v-col cols="12" md="6">
-            <player-manager
-              :weapons="weapons"
-              :armors="armors"
-              :players="players"
-              @players-updated="updatePlayers"
-            />
-          </v-col>
-          <v-col cols="12" md="6">
-            <battle-simulator
-              :players="players"
-              :enemies="enemies"
-              :weapons="weapons"
-              :armors="armors"
-            />
-          </v-col>
-        </v-row>
-      </v-container>
+      <v-row class="mb-32">
+        <!-- Added margin-bottom to avoid overlapping -->
+        <v-col cols="12" md="6">
+          <player-manager
+            :weapons="weapons"
+            :armors="armors"
+            :players="players"
+            @players-updated="updatePlayers"
+          />
+        </v-col>
+        <v-col cols="12" md="6">
+          <battle-simulator
+            :players="players"
+            :enemies="enemies"
+            :weapons="weapons"
+            :armors="armors"
+          />
+        </v-col>
+      </v-row>
+      <!-- <battle-log :logs="battleLog" /> -->
     </v-main>
   </v-app>
 </template>
 
 <script setup>
-definePageMeta({
-  layout: 'public'
-})
-
 import { ref } from 'vue'
 import PlayerManager from '../components/dnd/PlayerManager.vue'
 import BattleSimulator from '../components/dnd/BattleSimulator.vue'
+import BattleLog from '../components/dnd/BattleLog.vue'
 
 const weapons = ref([
   { id: 1, name: 'Prak', stats: 6, type: 'weapon' },
@@ -88,6 +85,8 @@ const enemies = ref([
   }
 ])
 
+const battleLog = ref([])
+
 const updatePlayers = newPlayers => {
   players.value = newPlayers
 }
@@ -95,4 +94,8 @@ const updatePlayers = newPlayers => {
 
 <style>
 @import 'tailwindcss/tailwind.css';
+
+.mb-32 {
+  margin-bottom: 8rem;
+}
 </style>

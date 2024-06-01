@@ -1,108 +1,106 @@
 <template>
-  <v-card class="battle-simulator">
-    <v-card-title>Battle Simulator</v-card-title>
-    <v-card-text>
-      <v-row class="align-center">
-        <v-col cols="9">
-          <v-select
-            v-model="selectedParticipant"
-            :items="allParticipants"
-            item-title="name"
-            item-value="id"
-            label="Select Participant to Add"
-            density="comfortable"
-            return-object
-            persistent-hint
-          />
-        </v-col>
-        <v-col cols="3">
-          <v-btn
-            color="primary"
-            @click="addToBattle"
-            :disabled="!selectedParticipant"
-            >Add to Battle</v-btn
-          >
+  <v-card-title>Battle Simulator</v-card-title>
+  <v-card-text>
+    <v-row class="align-center">
+      <v-col cols="9">
+        <v-select
+          v-model="selectedParticipant"
+          :items="allParticipants"
+          item-title="name"
+          item-value="id"
+          label="Select Participant to Add"
+          density="comfortable"
+          return-object
+          persistent-hint
+        />
+      </v-col>
+      <v-col cols="3">
+        <v-btn
+          color="primary"
+          @click="addToBattle"
+          :disabled="!selectedParticipant"
+          >Add to Battle</v-btn
+        >
+      </v-col>
+    </v-row>
+    <v-btn
+      color="red darken-3"
+      class="attack-button my-4"
+      @click="simulateAttack"
+      :disabled="attackerIndex === null || defenderIndex === null"
+      block
+    >
+      ATTACK
+    </v-btn>
+    <div class="mt-4">
+      <h3 class="text-xl text-center mb-4">Participants in Battle</h3>
+      <v-row>
+        <v-col
+          v-for="(participant, index) in battleParticipants"
+          :key="index"
+          cols="12"
+          md="6"
+        >
+          <v-card class="mb-4 relative">
+            <v-btn
+              icon
+              small
+              class="remove-btn"
+              @click="removeParticipant(index)"
+            >
+              <v-icon color="red">mdi-close</v-icon>
+            </v-btn>
+            <v-card-title>{{ participant.name }}</v-card-title>
+            <v-card-text>
+              <p>
+                <strong>HP:</strong> {{ participant.hp }} /
+                {{ participant.maxHP }}
+              </p>
+              <p><strong>Gold:</strong> {{ participant.gold }}</p>
+              <p>
+                <strong>Weapon:</strong>
+                {{ participant.weapon.name }} (Stats:
+                {{ participant.weapon.stats }})
+              </p>
+              <p>
+                <strong>Armor:</strong> {{ participant.armor.name }} (Stats:
+                {{ participant.armor.stats }})
+              </p>
+              <v-row class="mt-2">
+                <v-col>
+                  <v-btn
+                    class="attacker-btn"
+                    @click="setAsAttacker(index)"
+                    :class="{ selected: attackerIndex === index }"
+                  >
+                    <img
+                      src="../../assets/sword.png"
+                      alt="Attacker"
+                      class="icon-img"
+                    />
+                  </v-btn>
+                </v-col>
+                <v-col>
+                  <v-btn
+                    class="defender-btn"
+                    @click="setAsDefender(index)"
+                    :class="{ selected: defenderIndex === index }"
+                  >
+                    <img
+                      src="../../assets/shield.png"
+                      alt="Defender"
+                      class="icon-img"
+                    />
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
         </v-col>
       </v-row>
-      <v-btn
-        color="red darken-3"
-        class="attack-button my-4"
-        @click="simulateAttack"
-        :disabled="attackerIndex === null || defenderIndex === null"
-        block
-      >
-        ATTACK
-      </v-btn>
-      <div class="mt-4">
-        <h3 class="text-xl text-center mb-4">Participants in Battle</h3>
-        <v-row>
-          <v-col
-            v-for="(participant, index) in battleParticipants"
-            :key="index"
-            cols="12"
-            md="6"
-          >
-            <v-card class="mb-4 relative">
-              <v-btn
-                icon
-                small
-                class="remove-btn"
-                @click="removeParticipant(index)"
-              >
-                <v-icon color="red">mdi-close</v-icon>
-              </v-btn>
-              <v-card-title>{{ participant.name }}</v-card-title>
-              <v-card-text>
-                <p>
-                  <strong>HP:</strong> {{ participant.hp }} /
-                  {{ participant.maxHP }}
-                </p>
-                <p><strong>Gold:</strong> {{ participant.gold }}</p>
-                <p>
-                  <strong>Weapon:</strong>
-                  {{ participant.weapon.name }} (Stats:
-                  {{ participant.weapon.stats }})
-                </p>
-                <p>
-                  <strong>Armor:</strong> {{ participant.armor.name }} (Stats:
-                  {{ participant.armor.stats }})
-                </p>
-                <v-row class="mt-2">
-                  <v-col>
-                    <v-btn
-                      class="attacker-btn"
-                      @click="setAsAttacker(index)"
-                      :class="{ selected: attackerIndex === index }"
-                    >
-                      <img
-                        src="../../assets/sword.png"
-                        alt="Attacker"
-                        class="icon-img"
-                      />
-                    </v-btn>
-                  </v-col>
-                  <v-col>
-                    <v-btn
-                      class="defender-btn"
-                      @click="setAsDefender(index)"
-                      :class="{ selected: defenderIndex === index }"
-                    >
-                      <img
-                        src="../../assets/shield.png"
-                        alt="Defender"
-                        class="icon-img"
-                      />
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-      </div>
-      <battle-log :logs="battleLog"></battle-log>
-    </v-card-text>
-  </v-card>
+    </div>
+    <battle-log :logs="battleLog"></battle-log>
+  </v-card-text>
 </template>
 
 <script setup>
