@@ -1,22 +1,34 @@
 <template>
   <v-app>
-    <div class="p-4">
-      <player-manager
-        :weapons="weapons"
-        :armors="armors"
-        :players="players"
-        @players-updated="updatePlayers"
-      />
-      <battle-simulator
-        :players="players"
-        :weapons="weapons"
-        :armors="armors"
-      />
-    </div>
+    <v-main>
+      <v-container>
+        <v-row>
+          <v-col cols="12" md="6">
+            <player-manager
+              :weapons="weapons"
+              :armors="armors"
+              :players="players"
+              @players-updated="updatePlayers"
+            />
+          </v-col>
+          <v-col cols="12" md="6">
+            <battle-simulator
+              :players="players"
+              :enemies="enemies"
+              :weapons="weapons"
+              :armors="armors"
+            />
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
   </v-app>
 </template>
 
 <script setup>
+definePageMeta({
+  layout: 'public'
+})
 import { ref } from 'vue'
 import PlayerManager from '../components/dnd/PlayerManager.vue'
 import BattleSimulator from '../components/dnd/BattleSimulator.vue'
@@ -45,6 +57,21 @@ const players = ref([
     hp: 25,
     weapon: { id: 2, name: 'Stříbrná dýka', attack: 8 },
     armor: { id: 2, name: 'Ledové roucho', defense: 6 }
+  }
+])
+
+const enemies = ref([
+  {
+    name: 'Goblin',
+    hp: 15,
+    weapon: { id: 3, name: 'Club', attack: 5 },
+    armor: { id: 3, name: 'Leather Armor', defense: 3 }
+  },
+  {
+    name: 'Orc',
+    hp: 30,
+    weapon: { id: 4, name: 'Axe', attack: 10 },
+    armor: { id: 4, name: 'Chainmail', defense: 7 }
   }
 ])
 
