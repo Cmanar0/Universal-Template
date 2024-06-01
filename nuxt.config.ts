@@ -1,5 +1,5 @@
 import { defineNuxtConfig } from 'nuxt/config'
-import * as vuetify from 'vite-plugin-vuetify'
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
@@ -19,7 +19,8 @@ export default defineNuxtConfig({
     '@nuxt/test-utils/module',
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', config => {
-        config.plugins.push(vuetify.default({ autoImport: true }))
+        config.plugins = config.plugins || []
+        config.plugins.push(vuetify({ autoImport: true }))
       })
     }
   ],
@@ -29,7 +30,7 @@ export default defineNuxtConfig({
   vite: {
     vue: {
       template: {
-        transformAssetUrls: vuetify.transformAssetUrls
+        transformAssetUrls
       }
     }
   },

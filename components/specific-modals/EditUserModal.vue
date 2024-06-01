@@ -105,7 +105,17 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { User } from '../../types/user' // Update the path as necessary
+// import { User } from '../../types/user' // Update the path as necessary
+interface User {
+  id: string
+  email?: string
+  firstName?: string | null
+  lastName?: string | null
+  lang?: string
+  isActive?: boolean
+  registeredAt?: string
+  updatedAt?: string
+}
 
 const props = defineProps({
   user: Object as () => User,

@@ -164,15 +164,26 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useRuntimeConfig } from '#imports'
 import apiService from '../services/api-request' // Update the path as necessary
-import { User } from '../types/user' // Update the path as necessary
+// import { User } from '../types/user' // Update the path as necessary
 import EditUserModal from './specific-modals/EditUserModal.vue'
 import ModalTwoBtns from './reusable/ModalTwoBtns.vue'
 import { addNotification } from '../stores/notificationStore' // Import addNotification
 
+interface User {
+  id: string
+  email?: string
+  firstName?: string | null
+  lastName?: string | null
+  lang?: string
+  isActive?: boolean
+  registeredAt?: string
+  updatedAt?: string
+}
+
 const users = ref<User[]>([])
-const config = useRuntimeConfig()
+const baseApiUrl = 'https://next-backend-six.vercel.app/api/' // Get base API URL from environment variables
+
 const dropdownOpen = ref<string | null>(null)
 const isEditModalOpen = ref(false)
 const isDeactivateModalOpen = ref(false)
@@ -194,12 +205,8 @@ const deleteUser = reactive<User>({
 
 const fetchUsers = async () => {
   try {
-    const response = await apiService.get(
-      '/users',
-      {},
-      {},
-      config.public.baseApiUrl
-    )
+    const response = await apiService.get('/users', {}, {}, baseApiUrl)
+    console.log('fetchUsers response :>> ', response)
     users.value = response.users
   } catch (error) {
     console.error('Failed to fetch users:', error)
@@ -242,7 +249,7 @@ const updateUser = async (updatedUser: User) => {
       updatedUser,
       {},
       {},
-      config.public.baseApiUrl
+      baseApiUrl
     )
     await fetchUsers()
     closeModal()
@@ -268,7 +275,7 @@ const confirmDeactivate = async () => {
       { isActive: !deactivateUser.isActive },
       {},
       {},
-      config.public.baseApiUrl
+      baseApiUrl
     )
     await fetchUsers()
     closeModal()
@@ -296,12 +303,7 @@ const confirmDeactivate = async () => {
 
 const confirmDelete = async () => {
   try {
-    await apiService.delete(
-      `/users/${deleteUser.id}`,
-      {},
-      {},
-      config.public.baseApiUrl
-    )
+    await apiService.delete(`/users/${deleteUser.id}`, {}, {}, baseApiUrl)
     await fetchUsers()
     closeModal()
     addNotification({

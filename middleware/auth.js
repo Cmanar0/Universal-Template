@@ -8,8 +8,6 @@ import Cookies from 'js-cookie'
 import apiService from '../services/api-request' // Update the path as necessary
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
-  console.log('Middleware is running')
-
   const app = useNuxtApp()
   let token
   if (process.server) {
@@ -57,7 +55,6 @@ function getJwtClaims(token) {
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
     const payload = atob(base64)
     const decoded = JSON.parse(payload)
-    console.log('Decoded JWT:', decoded)
     return decoded // Return all claims to check iat and exp
   } catch (e) {
     console.error('Error decoding JWT:', e)
