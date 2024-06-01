@@ -1,12 +1,15 @@
 <template>
-  <div :class="['battle-log', { 'battle-log-closed': isClosed }]">
+  <div
+    :class="['battle-log', { 'battle-log-closed': isClosed }]"
+    :style="logStyle"
+  >
     <div class="battle-log-header" @click="toggleLog">
       <h3 class="text-xl">Battle Log</h3>
       <v-btn icon>
         <v-icon>{{ isClosed ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
       </v-btn>
     </div>
-    <div v-show="!isClosed" class="battle-log-content">
+    <div v-show="!isClosed" class="battle-log-content" ref="logContent">
       <ul>
         <li v-for="log in logs" :key="log" v-html="log"></li>
       </ul>
@@ -15,7 +18,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 
 const props = defineProps({
   logs: {
@@ -25,18 +29,42 @@ const props = defineProps({
 })
 
 const isClosed = ref(false)
+const logContent = ref(null)
 
 const toggleLog = () => {
   isClosed.value = !isClosed.value
 }
+
+const scrollToBottom = () => {
+  if (logContent.value) {
+    logContent.value.scrollTop = logContent.value.scrollHeight
+  }
+}
+
+const { mdAndUp } = useDisplay()
+
+const logStyle = computed(() => {
+  if (mdAndUp.value) {
+    return {
+      left: '0',
+      width: '50%'
+    }
+  } else {
+    return {
+      width: '100%'
+    }
+  }
+})
+
+watch(props.logs, () => {
+  scrollToBottom()
+})
 </script>
 
 <style scoped>
 .battle-log {
   position: fixed;
   bottom: 0;
-  left: 0;
-  width: 100%;
   max-height: 33vh;
   background: white;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);

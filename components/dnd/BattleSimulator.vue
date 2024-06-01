@@ -33,8 +33,8 @@
       >
         ATTACK
       </v-btn>
-      <div class="mt-7">
-        <h3 class="text-xl mb-3">Participants in Battle</h3>
+      <div class="mt-4">
+        <h3 class="text-xl text-center mb-4">Participants in Battle</h3>
         <v-row>
           <v-col
             v-for="(participant, index) in battleParticipants"
@@ -42,7 +42,7 @@
             cols="12"
             md="6"
           >
-            <v-card class="mb-4 bg-gray-100 relative">
+            <v-card class="mb-4 relative">
               <v-btn
                 icon
                 small
@@ -139,7 +139,7 @@ const addToBattle = () => {
 
 const removeParticipant = index => {
   const removed = battleParticipants.value.splice(index, 1)
-  battleLog.value.push(
+  battleLog.value.unshift(
     `<span class="text-red-600">${removed[0].name} has run away from the battle!</span>`
   )
   if (index === attackerIndex.value) {
@@ -170,7 +170,7 @@ const simulateAttack = () => {
   const damage = totalAttack >= totalDefense ? totalAttack - totalDefense : 0
 
   defender.hp -= damage
-  battleLog.value.push(
+  battleLog.value.unshift(
     `<span class="text-blue-500">${attacker.name} rolls a dice: ${diceRoll}</span> + 
     <span class="text-red-500">${attacker.weapon.name} attack: ${attacker.weapon.attack}</span> = 
     <span class="text-green-500">Total attack: ${totalAttack}</span> - 
@@ -179,7 +179,7 @@ const simulateAttack = () => {
   )
 
   if (defender.hp <= 0) {
-    battleLog.value.push(
+    battleLog.value.unshift(
       `<span class="text-red-600">${defender.name} has been defeated!</span>`
     )
     battleParticipants.value.splice(defenderIndex.value, 1)
