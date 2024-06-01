@@ -260,6 +260,18 @@ onMounted(() => {
   const storedPlayers = localStorage.getItem('players')
   if (storedPlayers) {
     players.value = JSON.parse(storedPlayers)
+    players.value.forEach(player => {
+      player.inventory.forEach(item => {
+        if (item.selected) {
+          if (item.type === 'weapon') {
+            player.weapon = { ...item }
+          } else if (item.type === 'armor') {
+            player.armor = { ...item }
+          }
+        }
+      })
+    })
+    emit('players-updated', players.value) // Emit updated players
   }
 })
 

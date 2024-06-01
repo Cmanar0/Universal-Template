@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import BattleLog from './BattleLog.vue'
 import { addNotification } from '../../stores/notificationStore'
 
@@ -289,15 +289,19 @@ const simulateAttack = () => {
   inputNumber.value = null
 }
 
-watch(props.players, newPlayers => {
-  // Update participants in battle with new players data
-  battleParticipants.value = battleParticipants.value.map(participant => {
-    const updatedParticipant = newPlayers.find(
-      player => player.name === participant.name
-    )
-    return updatedParticipant ? updatedParticipant : participant
-  })
-})
+watch(
+  () => props.players,
+  newPlayers => {
+    const updatedParticipants = battleParticipants.value.map(participant => {
+      const updatedParticipant = newPlayers.find(
+        player => player.name === participant.name
+      )
+      return updatedParticipant ? updatedParticipant : participant
+    })
+    battleParticipants.value = updatedParticipants
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped>
