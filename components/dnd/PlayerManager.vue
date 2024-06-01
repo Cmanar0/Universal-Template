@@ -94,7 +94,7 @@
                 Amount
               </th>
               <th
-                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 -
               </th>
@@ -118,7 +118,7 @@
               <td class="px-6 py-2 whitespace-nowrap">{{ item.stats }}</td>
               <td class="px-6 py-2 whitespace-nowrap">{{ item.quantity }}</td>
               <td
-                class="px-6 py-2 whitespace-nowrap text-sm font-medium actions"
+                class="px-6 py-2 whitespace-nowrap text-sm font-medium actions text-right"
               >
                 <button
                   class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -143,6 +143,13 @@
                 >
                   <span class="sr-only">Delete</span>
                   <v-icon class="text-red-500">mdi-close</v-icon>
+                </button>
+                <button
+                  class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                  @click="openSellModal(index, iIndex)"
+                >
+                  <span class="sr-only">Sell</span>
+                  <v-icon class="text-white">mdi-cash</v-icon>
                 </button>
               </td>
             </tr>
@@ -224,6 +231,28 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="isSellModalOpen" max-width="500px">
+      <v-card>
+        <v-card-title>Sell Item</v-card-title>
+        <v-card-text>
+          <p class="mb-4">
+            <strong>{{ players[sellPlayerIndex]?.name }}'s Gold:</strong>
+            <span>{{ players[sellPlayerIndex]?.gold }}</span>
+          </p>
+          <v-text-field
+            v-model.number="sellAmount"
+            label="Enter amount to sell for"
+            type="number"
+            min="10"
+            step="10"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="applySell">Sell</v-btn>
+          <v-btn color="error" @click="closeSellModal">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -246,13 +275,17 @@ const emit = defineEmits(['players-updated'])
 const isModalOpen = ref(false)
 const isRestModalOpen = ref(false)
 const isPayModalOpen = ref(false)
+const isSellModalOpen = ref(false)
 const restHours = ref(1)
 const payAmount = ref(10)
+const sellAmount = ref(10)
 const editIndex = ref(null)
 const newItem = ref({ name: '', type: 'other', stats: 0, quantity: 1 })
 const modalPlayerIndex = ref(null)
 const restPlayerIndex = ref(null)
 const payPlayerIndex = ref(null)
+const sellPlayerIndex = ref(null)
+const sellItemIndex = ref(null)
 
 const players = ref([...props.players])
 
@@ -260,18 +293,6 @@ onMounted(() => {
   const storedPlayers = localStorage.getItem('players')
   if (storedPlayers) {
     players.value = JSON.parse(storedPlayers)
-    players.value.forEach(player => {
-      player.inventory.forEach(item => {
-        if (item.selected) {
-          if (item.type === 'weapon') {
-            player.weapon = { ...item }
-          } else if (item.type === 'armor') {
-            player.armor = { ...item }
-          }
-        }
-      })
-    })
-    emit('players-updated', players.value) // Emit updated players
   }
 })
 
@@ -343,15 +364,18 @@ const selectItem = (playerIndex, itemIndex) => {
       player.armor = { id: null, name: '', stats: 0, type: 'armor' }
     }
   } else {
-    player.inventory.forEach((invItem, iIndex) => {
-      if (invItem.type === item.type) invItem.selected = false
-    })
-    item.selected = true
     if (item.type === 'weapon') {
+      player.inventory.forEach((invItem, iIndex) => {
+        if (invItem.type === 'weapon') invItem.selected = false
+      })
       player.weapon = { ...item }
     } else if (item.type === 'armor') {
+      player.inventory.forEach((invItem, iIndex) => {
+        if (invItem.type === 'armor') invItem.selected = false
+      })
       player.armor = { ...item }
     }
+    item.selected = true
   }
   addNotification({
     title: 'Item Used',
@@ -388,6 +412,23 @@ const useHealingItem = (playerIndex, itemIndex) => {
 
 const deleteItem = (playerIndex, itemIndex) => {
   const item = players.value[playerIndex].inventory[itemIndex]
+  if (item.selected) {
+    if (item.type === 'weapon') {
+      players.value[playerIndex].weapon = {
+        id: null,
+        name: '',
+        stats: 0,
+        type: 'weapon'
+      }
+    } else if (item.type === 'armor') {
+      players.value[playerIndex].armor = {
+        id: null,
+        name: '',
+        stats: 0,
+        type: 'armor'
+      }
+    }
+  }
   players.value[playerIndex].inventory.splice(itemIndex, 1)
   addNotification({
     title: 'Item Deleted',
@@ -425,7 +466,7 @@ const openPayModal = index => {
 
 const applyPay = () => {
   const player = players.value[payPlayerIndex.value]
-  player.gold -= payAmount.value
+  player.gold = Number(player.gold) - payAmount.value
   addNotification({
     title: 'Pay',
     message: `${player.name} paid ${payAmount.value} gold`,
@@ -440,6 +481,33 @@ const applyPay = () => {
 const closePayModal = () => {
   isPayModalOpen.value = false
   payAmount.value = 10 // Reset the pay amount
+}
+
+const openSellModal = (playerIndex, itemIndex) => {
+  sellPlayerIndex.value = playerIndex
+  sellItemIndex.value = itemIndex
+  isSellModalOpen.value = true
+}
+
+const applySell = () => {
+  const player = players.value[sellPlayerIndex.value]
+  const item = player.inventory[sellItemIndex.value]
+  player.gold = Number(player.gold) + sellAmount.value
+  player.inventory.splice(sellItemIndex.value, 1)
+  addNotification({
+    title: 'Item Sold',
+    message: `${player.name} sold ${item.name} for ${sellAmount.value} gold`,
+    color: 'yellow'
+  })
+  isSellModalOpen.value = false
+  sellAmount.value = 10 // Reset the sell amount
+  emit('players-updated', players.value)
+  saveToLocalStorage()
+}
+
+const closeSellModal = () => {
+  isSellModalOpen.value = false
+  sellAmount.value = 10 // Reset the sell amount
 }
 
 const getItemIcon = type => {
@@ -497,5 +565,8 @@ watch(props.players, newPlayers => {
 }
 .actions .v-btn:hover {
   background-color: #ddd;
+}
+.inventory-table .actions {
+  text-align: right;
 }
 </style>
