@@ -81,7 +81,7 @@ watch(props.logs, () => {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background: #f5f5f5;
+  background: #ececec;
   border-top: 1px solid #ddd;
   cursor: pointer;
   z-index: 1;

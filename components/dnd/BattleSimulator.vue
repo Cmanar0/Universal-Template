@@ -53,15 +53,19 @@
               </v-btn>
               <v-card-title>{{ participant.name }}</v-card-title>
               <v-card-text>
-                <p><strong>HP:</strong> {{ participant.hp }}</p>
+                <p>
+                  <strong>HP:</strong> {{ participant.hp }} /
+                  {{ participant.maxHP }}
+                </p>
+                <p><strong>Gold:</strong> {{ participant.gold }}</p>
                 <p>
                   <strong>Weapon:</strong>
-                  {{ participant.weapon.name }} (Attack:
-                  {{ participant.weapon.attack }})
+                  {{ participant.weapon.name }} (Stats:
+                  {{ participant.weapon.stats }})
                 </p>
                 <p>
-                  <strong>Armor:</strong> {{ participant.armor.name }} (Defense:
-                  {{ participant.armor.defense }})
+                  <strong>Armor:</strong> {{ participant.armor.name }} (Stats:
+                  {{ participant.armor.stats }})
                 </p>
                 <v-row class="mt-2">
                   <v-col>
@@ -124,6 +128,8 @@ const allParticipants = computed(() => {
     id: index,
     name: entity.name,
     hp: entity.hp,
+    maxHP: entity.maxHP,
+    gold: entity.gold,
     weapon: entity.weapon,
     armor: entity.armor
   }))
@@ -165,23 +171,39 @@ const simulateAttack = () => {
   const defender = battleParticipants.value[defenderIndex.value]
 
   const diceRoll = Math.floor(Math.random() * 6) + 1
-  const totalAttack = diceRoll + attacker.weapon.attack
-  const totalDefense = defender.armor.defense
+  const totalAttack = diceRoll + (attacker.weapon.stats || 0)
+  const totalDefense = defender.armor.stats || 0
   const damage = totalAttack >= totalDefense ? totalAttack - totalDefense : 0
 
   defender.hp -= damage
   battleLog.value.unshift(
     `<span class="text-blue-500">${attacker.name} rolls a dice: ${diceRoll}</span> + 
-    <span class="text-red-500">${attacker.weapon.name} attack: ${attacker.weapon.attack}</span> = 
+    <span class="text-red-500">${attacker.weapon.name} attack: ${attacker.weapon.stats}</span> = 
     <span class="text-green-500">Total attack: ${totalAttack}</span> - 
-    <span class="text-orange-500">${defender.name}'s ${defender.armor.name} defense: ${defender.armor.defense}</span> = 
+    <span class="text-orange-500">${defender.name}'s ${defender.armor.name} defense: ${defender.armor.stats}</span> = 
     <span class="text-purple-500">Damage dealt: ${damage}</span>`
   )
 
   if (defender.hp <= 0) {
-    battleLog.value.unshift(
-      `<span class="text-red-600">${defender.name} has been defeated!</span>`
-    )
+    if (attacker !== defender) {
+      const goldEarned = Math.floor(Math.random() * 100) + 1
+      attacker.gold += goldEarned
+      battleLog.value.unshift(
+        `<span class="text-red-600">${defender.name} has been defeated!</span> 
+        <span class="text-yellow-500">${attacker.name} earns ${goldEarned} gold!</span>`
+      )
+
+      // Update original player's gold
+      const originalAttacker = props.players.find(p => p.name === attacker.name)
+      if (originalAttacker) {
+        originalAttacker.gold = attacker.gold
+      }
+    } else {
+      battleLog.value.unshift(
+        `<span class="text-red-600">${defender.name} has been defeated!</span>`
+      )
+    }
+
     battleParticipants.value.splice(defenderIndex.value, 1)
     if (defenderIndex.value === attackerIndex.value) {
       attackerIndex.value = null
@@ -238,12 +260,17 @@ watch(props.players, newPlayers => {
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid #ddd;
+  border: 2px solid transparent;
 }
 
-.attacker-btn.selected,
-.defender-btn.selected {
+.attacker-btn.selected {
   background-color: #2196f3;
+  border-color: #2196f3;
+}
+
+.defender-btn.selected {
+  background-color: #ff5722;
+  border-color: #ff5722;
 }
 
 .attacker-btn img,
