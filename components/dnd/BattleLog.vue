@@ -48,6 +48,6 @@ const toggleLog = () => {
 }
 
 .battle-log-content {
-  max-height: 50vh; /* Adjust based on your preference */
+  max-height: 20vh; /* Adjust based on your preference */
 }
 </style>

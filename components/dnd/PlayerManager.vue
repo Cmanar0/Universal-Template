@@ -1,142 +1,165 @@
 <template>
-  <v-card-title>Player Manager</v-card-title>
   <v-card-text>
     <div
       v-for="(player, index) in players"
       :key="index"
-      class="mb-4 p-4 border rounded flex flex-col md:flex-row"
+      class="mb-4 p-4 border rounded"
     >
-      <v-col cols="12" md="4">
-        <div v-if="editIndex === index">
-          <v-text-field v-model="player.name" label="Player Name" />
-          <v-text-field v-model.number="player.hp" label="HP" type="number" />
-          <v-text-field
-            v-model.number="player.maxHP"
-            label="Max HP"
-            type="number"
-          />
-          <v-text-field
-            v-model.number="player.gold"
-            label="Gold"
-            type="number"
-          />
-          <v-btn color="success" @click="savePlayer(index)">Save</v-btn>
-          <v-btn color="error" @click="removePlayer(index)">Remove</v-btn>
-        </div>
-        <div v-else>
-          <h2 class="text-2xl font-bold mb-2">{{ player.name }}</h2>
-          <p class="flex items-center">
-            <strong>HP:</strong>
-            <span class="ml-2">{{ player.hp }} / {{ player.maxHP }}</span>
-          </p>
-          <div
-            class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2"
-          >
+      <div v-if="editIndex === index">
+        <v-text-field v-model="player.name" label="Player Name" />
+        <v-text-field v-model="player.hp" label="HP" type="number" />
+        <v-text-field v-model="player.maxHP" label="Max HP" type="number" />
+        <v-text-field v-model="player.gold" label="Gold" type="number" />
+        <v-select
+          v-model="player.weapon"
+          :items="weaponOptions"
+          item-title="name"
+          item-value="id"
+          label="Weapon"
+          density="comfortable"
+          return-object
+          persistent-hint
+        />
+        <v-select
+          v-model="player.armor"
+          :items="armorOptions"
+          item-title="name"
+          item-value="id"
+          label="Armor"
+          density="comfortable"
+          return-object
+          persistent-hint
+        />
+        <v-btn color="success" @click="savePlayer(index)">Save</v-btn>
+        <v-btn color="error ml-2" @click="removePlayer(index)">Remove</v-btn>
+      </div>
+      <div v-else>
+        <div class="flex justify-between mb-4">
+          <div>
+            <div class="flex column mb-4">
+              <div>
+                <h1 class="text-2xl font-bold">{{ player.name }}</h1>
+              </div>
+              <div class="ml-4">
+                <v-btn color="primary" @click="editIndex = index">Edit</v-btn>
+              </div>
+            </div>
+            <p class="flex items-center">
+              <strong>HP:</strong>
+              <span class="ml-2">{{ player.hp }} / {{ player.maxHP }}</span>
+            </p>
             <div
-              class="absolute top-0 left-0 h-full bg-green-500"
-              :style="{ width: (player.hp / player.maxHP) * 100 + '%' }"
-            ></div>
+              class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2 min-w-80"
+            >
+              <div
+                class="absolute top-0 left-0 h-full bg-green-500"
+                :style="{ width: (player.hp / player.maxHP) * 100 + '%' }"
+              ></div>
+            </div>
           </div>
-          <p>
-            <strong>Gold:</strong>
-            <span class="ml-2 text-yellow-500">{{ player.gold }}</span>
-          </p>
-          <p>
-            <strong>Weapon:</strong> {{ player.weapon.name }} (Stats:
-            {{ player.weapon.stats }})
-          </p>
-          <p>
-            <strong>Armor:</strong> {{ player.armor.name }} (Stats:
-            {{ player.armor.stats }})
-          </p>
-          <v-btn color="primary" class="mt-4" @click="editIndex = index"
-            >Edit</v-btn
-          >
+          <div>
+            <div class="flex flex-col items-end space-y-2">
+              <div class="flex items-center space-x-2">
+                <strong>Gold:</strong>
+                <span class="text-yellow-600 bg-yellow-100 p-1 rounded">{{
+                  player.gold
+                }}</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <strong>Weapon:</strong>
+                <span class="text-blue-600">{{ player.weapon.name }}</span>
+                <span>(Stats: {{ player.weapon.stats }})</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <strong>Armor:</strong>
+                <span class="text-blue-400">{{ player.armor.name }}</span>
+                <span>(Stats: {{ player.armor.stats }})</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </v-col>
-      <v-col cols="12" md="8">
-        <v-btn color="primary" @click="openModal(index)" block>ADD ITEM</v-btn>
-        <div class="overflow-x-auto mt-4">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th
-                  class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Item
-                </th>
-                <th
-                  class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Type
-                </th>
-                <th
-                  class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Stats
-                </th>
-                <th
-                  class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Quantity
-                </th>
-                <th
-                  class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr
-                v-for="(item, iIndex) in player.inventory"
-                :key="iIndex"
-                :class="{ 'bg-gray-100': item.selected }"
+      </div>
+      <v-btn color="primary" @click="openModal(index)" block>ADD ITEM</v-btn>
+      <div class="overflow-x-auto mt-4">
+        <table class="min-w-full divide-y divide-gray-200 inventory-table">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                <td class="px-6 py-2 whitespace-nowrap">{{ item.name }}</td>
-                <td
-                  class="px-6 py-2 whitespace-nowrap"
-                  v-if="item.type !== 'other'"
+                Item
+              </th>
+              <th
+                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Type
+              </th>
+              <th
+                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Stats
+              </th>
+              <th
+                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Amount
+              </th>
+              <th
+                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                -
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr
+              v-for="(item, iIndex) in player.inventory"
+              :key="iIndex"
+              :class="{ 'bg-gray-100': item.selected }"
+            >
+              <td class="px-6 py-2 whitespace-nowrap">{{ item.name }}</td>
+              <td
+                class="px-6 py-2 whitespace-nowrap"
+                v-if="item.type !== 'other'"
+                :class="getItemClass(item.type)"
+              >
+                {{ item.type }}
+              </td>
+              <td class="px-6 py-2 whitespace-nowrap" v-else>-</td>
+              <td class="px-6 py-2 whitespace-nowrap">{{ item.stats }}</td>
+              <td class="px-6 py-2 whitespace-nowrap">{{ item.quantity }}</td>
+              <td
+                class="px-6 py-2 whitespace-nowrap text-sm font-medium actions"
+              >
+                <button
+                  class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   :class="getItemClass(item.type)"
+                  @click="
+                    item.type === 'healing'
+                      ? useHealingItem(index, iIndex)
+                      : selectItem(index, iIndex)
+                  "
                 >
-                  {{ item.type }}
-                </td>
-                <td class="px-6 py-2 whitespace-nowrap" v-else>-</td>
-                <td class="px-6 py-2 whitespace-nowrap">{{ item.stats }}</td>
-                <td class="px-6 py-2 whitespace-nowrap">
-                  {{ item.quantity }}
-                </td>
-                <td class="px-6 py-2 whitespace-nowrap text-sm font-medium">
-                  <button
-                    class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    :class="getItemClass(item.type)"
-                    @click="
-                      item.type === 'healing'
-                        ? useHealingItem(index, iIndex)
-                        : selectItem(index, iIndex)
-                    "
+                  <span class="sr-only">Use</span>
+                  <v-icon
+                    :class="{
+                      'text-white': item.type === 'healing' || item.selected
+                    }"
+                    >{{ getItemIcon(item.type) }}</v-icon
                   >
-                    <span class="sr-only">Use</span>
-                    <v-icon
-                      :class="{
-                        'text-white': item.type === 'healing' || item.selected
-                      }"
-                      >{{ getItemIcon(item.type) }}</v-icon
-                    >
-                  </button>
-                  <button
-                    class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                    @click="deleteItem(index, iIndex)"
-                  >
-                    <span class="sr-only">Delete</span>
-                    <v-icon class="text-red-500">mdi-close</v-icon>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </v-col>
+                </button>
+                <button
+                  class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  @click="deleteItem(index, iIndex)"
+                >
+                  <span class="sr-only">Delete</span>
+                  <v-icon class="text-red-500">mdi-close</v-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
     <v-dialog v-model="isModalOpen" max-width="500px">
       <v-card>
@@ -172,6 +195,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { addNotification } from '../stores/notificationStore'
 
 const props = defineProps({
   weapons: Array,
@@ -262,6 +286,11 @@ const selectItem = (playerIndex, itemIndex) => {
       player.armor = { ...item }
     }
   }
+  addNotification({
+    title: 'Item Used',
+    message: `${player.name} selected ${item.name} (${item.type})`,
+    color: 'blue'
+  })
   emit('players-updated', players.value)
   console.log(
     `Updated players after selecting item: ${JSON.stringify(players.value)}`
@@ -277,6 +306,11 @@ const useHealingItem = (playerIndex, itemIndex) => {
   if (item.quantity <= 0) {
     player.inventory.splice(itemIndex, 1)
   }
+  addNotification({
+    title: 'Healing Item Used',
+    message: `${player.name} healed for ${item.stats} HP`,
+    color: 'green'
+  })
   emit('players-updated', players.value)
   console.log(
     `Updated players after using healing item: ${JSON.stringify(players.value)}`
@@ -284,7 +318,13 @@ const useHealingItem = (playerIndex, itemIndex) => {
 }
 
 const deleteItem = (playerIndex, itemIndex) => {
+  const item = players.value[playerIndex].inventory[itemIndex]
   players.value[playerIndex].inventory.splice(itemIndex, 1)
+  addNotification({
+    title: 'Item Deleted',
+    message: `Deleted ${item.name} from inventory`,
+    color: 'gray'
+  })
   emit('players-updated', players.value)
 }
 
@@ -363,5 +403,8 @@ watch(props.players, newPlayers => {
 }
 .v-icon {
   font-size: 12px; /* Smaller icons */
+}
+.actions .v-btn:hover {
+  background-color: #ddd;
 }
 </style>

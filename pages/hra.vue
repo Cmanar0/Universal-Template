@@ -23,6 +23,7 @@
       <!-- <battle-log :logs="battleLog" /> -->
     </v-main>
   </v-app>
+  <Notification class="z-index-1100" />
 </template>
 
 <script setup>
@@ -30,6 +31,7 @@ import { ref } from 'vue'
 import PlayerManager from '../components/dnd/PlayerManager.vue'
 import BattleSimulator from '../components/dnd/BattleSimulator.vue'
 import BattleLog from '../components/dnd/BattleLog.vue'
+import Notification from '../components/reusable/Notification.vue' // Import Notification
 
 const weapons = ref([
   { id: 1, name: 'Prak', stats: 6, type: 'weapon' },

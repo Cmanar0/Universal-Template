@@ -1,5 +1,4 @@
 <template>
-  <v-card-title>Battle Simulator</v-card-title>
   <v-card-text>
     <v-row class="align-center">
       <v-col cols="9">
@@ -56,7 +55,6 @@
                 <strong>HP:</strong> {{ participant.hp }} /
                 {{ participant.maxHP }}
               </p>
-              <p><strong>Gold:</strong> {{ participant.gold }}</p>
               <p>
                 <strong>Weapon:</strong>
                 {{ participant.weapon.name }} (Stats:
@@ -106,6 +104,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import BattleLog from './BattleLog.vue'
+import { addNotification } from '../../stores/notificationStore'
 
 const props = defineProps({
   players: Array,
@@ -146,6 +145,11 @@ const removeParticipant = index => {
   battleLog.value.unshift(
     `<span class="text-red-600">${removed[0].name} has run away from the battle!</span>`
   )
+  addNotification({
+    title: 'Participant Run Away',
+    message: `${removed[0].name} has run away from the battle!`,
+    color: 'gray'
+  })
   if (index === attackerIndex.value) {
     attackerIndex.value = null
   }
@@ -168,12 +172,25 @@ const simulateAttack = () => {
   const attacker = battleParticipants.value[attackerIndex.value]
   const defender = battleParticipants.value[defenderIndex.value]
 
+  if (attacker.name === defender.name) {
+    battleLog.value.unshift(
+      `<span class="text-red-600">${attacker.name} cannot attack themselves!</span>`
+    )
+    addNotification({
+      title: 'Invalid Attack',
+      message: `${attacker.name} cannot attack themselves!`,
+      color: 'red'
+    })
+    return
+  }
+
   const diceRoll = Math.floor(Math.random() * 6) + 1
-  const totalAttack = diceRoll + (attacker.weapon.stats || 0)
-  const totalDefense = defender.armor.stats || 0
+  const totalAttack = diceRoll + attacker.weapon.stats
+  const totalDefense = defender.armor.stats
   const damage = totalAttack >= totalDefense ? totalAttack - totalDefense : 0
 
   defender.hp -= damage
+
   battleLog.value.unshift(
     `<span class="text-blue-500">${attacker.name} rolls a dice: ${diceRoll}</span> + 
     <span class="text-red-500">${attacker.weapon.name} attack: ${attacker.weapon.stats}</span> = 
@@ -182,24 +199,33 @@ const simulateAttack = () => {
     <span class="text-purple-500">Damage dealt: ${damage}</span>`
   )
 
-  if (defender.hp <= 0) {
-    if (attacker !== defender) {
-      const goldEarned = Math.floor(Math.random() * 100) + 1
-      attacker.gold += goldEarned
-      battleLog.value.unshift(
-        `<span class="text-red-600">${defender.name} has been defeated!</span> 
-        <span class="text-yellow-500">${attacker.name} earns ${goldEarned} gold!</span>`
-      )
+  addNotification({
+    title: 'Attack',
+    message: `${attacker.name} attacked ${defender.name} dealing ${damage} damage`,
+    color: 'red'
+  })
 
-      // Update original player's gold
-      const originalAttacker = props.players.find(p => p.name === attacker.name)
-      if (originalAttacker) {
-        originalAttacker.gold = attacker.gold
-      }
-    } else {
+  if (defender.hp <= 0) {
+    battleLog.value.unshift(
+      `<span class="text-red-600">${defender.name} has been defeated!</span>`
+    )
+    addNotification({
+      title: 'Defeat',
+      message: `${defender.name} has been defeated!`,
+      color: 'red'
+    })
+
+    if (attacker.name !== defender.name) {
+      const goldGained = Math.floor(Math.random() * 50) + 10
+      attacker.gold += goldGained
       battleLog.value.unshift(
-        `<span class="text-red-600">${defender.name} has been defeated!</span>`
+        `<span class="text-yellow-500">${attacker.name} gained ${goldGained} gold!</span>`
       )
+      addNotification({
+        title: 'Gold Gained',
+        message: `${attacker.name} gained ${goldGained} gold!`,
+        color: 'yellow'
+      })
     }
 
     battleParticipants.value.splice(defenderIndex.value, 1)
@@ -209,10 +235,14 @@ const simulateAttack = () => {
     defenderIndex.value = null
   }
 
-  // Update original player's HP
+  // Update original player's HP and gold
   const originalDefender = props.players.find(p => p.name === defender.name)
   if (originalDefender) {
     originalDefender.hp = defender.hp
+  }
+  const originalAttacker = props.players.find(p => p.name === attacker.name)
+  if (originalAttacker) {
+    originalAttacker.gold = attacker.gold
   }
 }
 
@@ -258,19 +288,17 @@ watch(props.players, newPlayers => {
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px solid transparent;
+  border: 1px solid #ddd;
 }
 
 .attacker-btn.selected {
   background-color: #2196f3;
   border-color: #2196f3;
 }
-
 .defender-btn.selected {
-  background-color: #ff5722;
-  border-color: #ff5722;
+  background-color: #f32121;
+  border-color: #f32121;
 }
-
 .attacker-btn img,
 .defender-btn img {
   filter: invert(0);
