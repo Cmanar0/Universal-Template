@@ -144,6 +144,14 @@ export const weapons = ref([
 
   // Level 3
   {
+    id: 'W110',
+    name: 'Čarodějova hůl',
+    stats: 15,
+    type: 'weapon',
+    level: 3,
+    value: 150
+  },
+  {
     id: 'W21',
     name: 'Dlouhý meč',
     stats: 12,
@@ -552,18 +560,18 @@ export const healingItems = ref([
 
 export const foodItems = ref([
   // Level 1
-  { id: 'F1', name: 'Jablko', stats: 5, type: 'food', level: 1, value: 5 },
-  { id: 'F2', name: 'Hruška', stats: 5, type: 'food', level: 1, value: 5 },
-  { id: 'F3', name: 'Banán', stats: 5, type: 'food', level: 1, value: 5 },
-  { id: 'F4', name: 'Hrozny', stats: 5, type: 'food', level: 1, value: 5 },
-  { id: 'F5', name: 'Meloun', stats: 10, type: 'food', level: 1, value: 10 },
-  { id: 'F6', name: 'Jahody', stats: 5, type: 'food', level: 1, value: 5 },
-  { id: 'F7', name: 'Chleba', stats: 10, type: 'food', level: 1, value: 10 },
-  { id: 'F8', name: 'Sýr', stats: 10, type: 'food', level: 1, value: 10 },
+  { id: 'F1', name: 'Jablko', stats: 1, type: 'food', level: 1, value: 5 },
+  { id: 'F2', name: 'Hruška', stats: 1, type: 'food', level: 1, value: 5 },
+  { id: 'F3', name: 'Banán', stats: 1, type: 'food', level: 1, value: 5 },
+  { id: 'F4', name: 'Hrozny', stats: 1, type: 'food', level: 1, value: 5 },
+  { id: 'F5', name: 'Meloun', stats: 3, type: 'food', level: 1, value: 10 },
+  { id: 'F6', name: 'Jahody', stats: 2, type: 'food', level: 1, value: 5 },
+  { id: 'F7', name: 'Chleba', stats: 3, type: 'food', level: 1, value: 10 },
+  { id: 'F8', name: 'Sýr', stats: 3, type: 'food', level: 1, value: 10 },
   {
     id: 'F9',
     name: 'Pečené brambory',
-    stats: 10,
+    stats: 3,
     type: 'food',
     level: 1,
     value: 10
@@ -571,7 +579,7 @@ export const foodItems = ref([
   {
     id: 'F10',
     name: 'Pečená mrkev',
-    stats: 10,
+    stats: 3,
     type: 'food',
     level: 1,
     value: 10
@@ -580,7 +588,7 @@ export const foodItems = ref([
   {
     id: 'F12',
     name: 'Kuřecí stehno',
-    stats: 15,
+    stats: 4,
     type: 'food',
     level: 1,
     value: 15
@@ -588,7 +596,7 @@ export const foodItems = ref([
   {
     id: 'F13',
     name: 'Vepřový kotlet',
-    stats: 15,
+    stats: 4,
     type: 'food',
     level: 1,
     value: 15
@@ -596,7 +604,7 @@ export const foodItems = ref([
   {
     id: 'F14',
     name: 'Hovězí steak',
-    stats: 20,
+    stats: 5,
     type: 'food',
     level: 1,
     value: 20
@@ -604,7 +612,7 @@ export const foodItems = ref([
   {
     id: 'F15',
     name: 'Pečená ryba',
-    stats: 20,
+    stats: 5,
     type: 'food',
     level: 1,
     value: 20
@@ -612,7 +620,7 @@ export const foodItems = ref([
   {
     id: 'F16',
     name: 'Medový koláč',
-    stats: 15,
+    stats: 5,
     type: 'food',
     level: 1,
     value: 15
@@ -620,7 +628,7 @@ export const foodItems = ref([
   {
     id: 'F17',
     name: 'Houbový guláš',
-    stats: 20,
+    stats: 5,
     type: 'food',
     level: 1,
     value: 20
@@ -628,7 +636,7 @@ export const foodItems = ref([
   {
     id: 'F18',
     name: 'Zeleninový guláš',
-    stats: 20,
+    stats: 5,
     type: 'food',
     level: 1,
     value: 20
@@ -636,7 +644,7 @@ export const foodItems = ref([
   {
     id: 'F19',
     name: 'Masový guláš',
-    stats: 25,
+    stats: 6,
     type: 'food',
     level: 1,
     value: 25
@@ -644,7 +652,7 @@ export const foodItems = ref([
   {
     id: 'F20',
     name: 'Pečený krocán',
-    stats: 25,
+    stats: 6,
     type: 'food',
     level: 1,
     value: 25

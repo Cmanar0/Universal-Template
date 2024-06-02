@@ -84,7 +84,14 @@
         </div>
       </div>
       <div class="flex space-x-2 mb-2">
-        <v-btn color="primary" @click="openModal(index)" block>ADD ITEM</v-btn>
+        <v-btn color="primary" @click="openModalCreateItem(index)" block
+          >Create ITEM</v-btn
+        >
+      </div>
+      <div class="flex space-x-2 mb-2">
+        <v-btn color="primary" @click="openModalAddItem(index)" block
+          >ADD ITEM</v-btn
+        >
       </div>
       <div class="overflow-x-auto mt-4">
         <table class="min-w-full divide-y divide-gray-200 inventory-table">
@@ -187,7 +194,9 @@
         </table>
       </div>
     </div>
-    <v-dialog v-model="isModalOpen" max-width="500px">
+
+    <!-- Dialogs -->
+    <v-dialog v-model="isModalOpenAddItem" max-width="500px">
       <v-card>
         <v-card-title>Add Item</v-card-title>
         <v-card-text>
@@ -201,6 +210,25 @@
             clearable
             outlined
           ></v-select>
+          <v-text-field
+            v-model.number="newItem.quantity"
+            label="Quantity"
+            type="number"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="addItem">Add</v-btn>
+          <v-btn color="error" @click="isModalOpenAddItem = false"
+            >Cancel</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="isModalOpenCreateItem" max-width="500px">
+      <v-card>
+        <v-card-title>Create Item</v-card-title>
+        <v-card-text>
           <v-text-field v-model="newItem.name" label="Item Name" />
           <v-radio-group v-model="newItem.type" label="Type">
             <v-radio label="Healing" value="healing" />
@@ -216,17 +244,30 @@
             type="number"
           />
           <v-text-field
+            v-model.number="newItem.level"
+            label="Level"
+            type="number"
+          />
+          <v-text-field
+            v-model.number="newItem.value"
+            label="Value"
+            type="number"
+          />
+          <v-text-field
             v-model.number="newItem.quantity"
             label="Quantity"
             type="number"
           />
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" @click="addItem">Add</v-btn>
-          <v-btn color="error" @click="isModalOpen = false">Cancel</v-btn>
+          <v-btn color="primary" @click="createItem">Add</v-btn>
+          <v-btn color="error" @click="isModalOpenCreateItem = false"
+            >Cancel</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <v-dialog v-model="isRestModalOpen" max-width="500px">
       <v-card>
         <v-card-title>Rest</v-card-title>
@@ -245,6 +286,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <v-dialog v-model="isPayModalOpen" max-width="500px">
       <v-card>
         <v-card-title>Pay</v-card-title>
@@ -272,6 +314,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <v-dialog v-model="isSellModalOpen" max-width="500px">
       <v-card>
         <v-card-title>Sell Item</v-card-title>
@@ -321,7 +364,8 @@ const props = defineProps({
 
 const emit = defineEmits(['players-updated'])
 
-const isModalOpen = ref(false)
+const isModalOpenCreateItem = ref(false)
+const isModalOpenAddItem = ref(false)
 const isRestModalOpen = ref(false)
 const isPayModalOpen = ref(false)
 const isSellModalOpen = ref(false)
@@ -331,7 +375,14 @@ const sellAmount = ref(0)
 const sellQuantity = ref(1)
 const maxSellQuantity = ref(1)
 const editIndex = ref(null)
-const newItem = ref({ name: '', type: 'other', stats: 0, quantity: 1 })
+const newItem = ref({
+  name: '',
+  type: 'other',
+  stats: 0,
+  level: 1,
+  value: 10,
+  quantity: 1
+})
 const selectedPredefinedItem = ref(null)
 const modalPlayerIndex = ref(null)
 const restPlayerIndex = ref(null)
@@ -376,63 +427,63 @@ const savePlayer = index => {
   saveToLocalStorage()
 }
 
-const openModal = index => {
+const openModalCreateItem = index => {
   modalPlayerIndex.value = index
-  newItem.value = { name: '', type: 'other', stats: 0, quantity: 1 }
+  resetNewItem()
+  isModalOpenCreateItem.value = true
+}
+
+const openModalAddItem = index => {
+  modalPlayerIndex.value = index
+  resetNewItem()
+  isModalOpenAddItem.value = true
+}
+
+const resetNewItem = () => {
+  newItem.value = {
+    name: '',
+    type: 'other',
+    stats: 0,
+    level: 1,
+    value: 10,
+    quantity: 1
+  }
   selectedPredefinedItem.value = null
-  isModalOpen.value = true
+}
+
+const createItem = () => {
+  addItemToInventory()
+  isModalOpenCreateItem.value = false
 }
 
 const addItem = () => {
+  if (selectedPredefinedItem.value) {
+    const predefinedItem = props.items.find(
+      item => item.id === selectedPredefinedItem.value
+    )
+    newItem.value = { ...predefinedItem, quantity: newItem.value.quantity }
+  }
+  addItemToInventory()
+  isModalOpenAddItem.value = false
+}
+
+const addItemToInventory = () => {
   if (modalPlayerIndex.value !== null) {
     if (!players.value[modalPlayerIndex.value].inventory) {
       players.value[modalPlayerIndex.value].inventory = []
     }
 
-    if (selectedPredefinedItem.value) {
-      const predefinedItem = props.items.find(
-        item => item.id === selectedPredefinedItem.value
-      )
-
-      if (
-        predefinedItem.name === newItem.name &&
-        predefinedItem.type === newItem.type &&
-        predefinedItem.stats === newItem.stats
-      ) {
-        const existingItem = players.value[
-          modalPlayerIndex.value
-        ].inventory.find(item => item.id === predefinedItem.id)
-
-        if (existingItem) {
-          existingItem.quantity += newItem.quantity
-        } else {
-          players.value[modalPlayerIndex.value].inventory.push({
-            ...predefinedItem,
-            quantity: newItem.quantity
-          })
-        }
-      } else {
-        const newItemWithId = {
-          ...newItem,
-          id: `${newItem.type.charAt(0).toUpperCase()}${Date.now()}`
-        }
-        players.value[modalPlayerIndex.value].inventory.push({
-          ...newItemWithId,
-          quantity: newItem.quantity
-        })
-      }
-    } else {
-      const newItemWithId = {
-        ...newItem,
-        id: `${newItem.type.charAt(0).toUpperCase()}${Date.now()}`
-      }
-      players.value[modalPlayerIndex.value].inventory.push({
-        ...newItemWithId,
-        quantity: newItem.quantity
-      })
+    const itemType = newItem.value.type || 'other'
+    const newItemWithId = {
+      ...newItem.value,
+      id: `${itemType.charAt(0).toUpperCase()}${Date.now()}`
     }
 
-    isModalOpen.value = false
+    players.value[modalPlayerIndex.value].inventory.push({
+      ...newItemWithId,
+      quantity: newItem.value.quantity
+    })
+
     emit('players-updated', players.value)
     saveToLocalStorage()
   }
@@ -451,7 +502,7 @@ const selectItem = (playerIndex, itemIndex) => {
     }
   } else {
     if (item.type !== 'other') {
-      player.inventory.forEach((invItem, iIndex) => {
+      player.inventory.forEach(invItem => {
         if (invItem.type === item.type) invItem.selected = false
       })
     }
@@ -638,8 +689,11 @@ const applySell = () => {
 
   player.gold += totalSellValue
   item.quantity -= sellQuantity.value
+
   if (item.quantity <= 0) {
-    player.inventory.splice(sellItemIndex.value, 1)
+    setTimeout(() => {
+      player.inventory.splice(sellItemIndex.value, 1)
+    }, 200)
   }
 
   addNotification({
@@ -648,9 +702,16 @@ const applySell = () => {
     color: 'yellow'
   })
 
+  // Ensure the modal closes after selling items
   isSellModalOpen.value = false
   emit('players-updated', players.value)
-  saveToLocalStorage()
+  setTimeout(() => {
+    saveToLocalStorage()
+  }, 250)
+
+  // Reset sell quantity and sell amount after closing the modal
+  sellQuantity.value = 1
+  sellAmount.value = 0
 }
 
 const closeSellModal = () => {
@@ -712,15 +773,9 @@ watch(props.players, newPlayers => {
 watch(selectedPredefinedItem, newValue => {
   if (newValue) {
     const predefinedItem = props.items.find(item => item.id === newValue)
-    newItem.name = predefinedItem.name
-    newItem.type = predefinedItem.type
-    newItem.stats = predefinedItem.stats
-    newItem.quantity = 1
+    newItem.value = { ...predefinedItem, quantity: newItem.value.quantity }
   } else {
-    newItem.name = ''
-    newItem.type = 'other'
-    newItem.stats = 0
-    newItem.quantity = 1
+    resetNewItem()
   }
 })
 </script>
