@@ -45,6 +45,23 @@
                 :style="{ width: (player.hp / player.maxHP) * 100 + '%' }"
               ></div>
             </div>
+            <p class="flex items-center">
+              <strong>Food Healing:</strong>
+              <span class="ml-2">{{
+                foodHealingRemaining(player) + ' / ' + player.maxHP
+              }}</span>
+            </p>
+            <div
+              class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2 min-w-80"
+            >
+              <div
+                class="absolute top-0 left-0 h-full bg-red-500"
+                :style="{
+                  width:
+                    (foodHealingRemaining(player) / player.maxHP) * 100 + '%'
+                }"
+              ></div>
+            </div>
           </div>
           <div class="flex flex-col items-end space-y-2">
             <div class="flex items-center space-x-2">
@@ -91,6 +108,16 @@
               <th
                 class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
+                Level
+              </th>
+              <th
+                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Value
+              </th>
+              <th
+                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Amount
               </th>
               <th
@@ -109,13 +136,13 @@
               <td class="px-6 py-2 whitespace-nowrap">{{ item.name }}</td>
               <td
                 class="px-6 py-2 whitespace-nowrap"
-                v-if="item.type !== 'other'"
                 :class="getItemClass(item.type)"
               >
                 {{ item.type }}
               </td>
-              <td class="px-6 py-2 whitespace-nowrap" v-else>-</td>
               <td class="px-6 py-2 whitespace-nowrap">{{ item.stats }}</td>
+              <td class="px-6 py-2 whitespace-nowrap">{{ item.level }}</td>
+              <td class="px-6 py-2 whitespace-nowrap">{{ item.value }}</td>
               <td class="px-6 py-2 whitespace-nowrap">{{ item.quantity }}</td>
               <td
                 class="px-6 py-2 whitespace-nowrap text-sm font-medium actions"
@@ -124,15 +151,18 @@
                   class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   :class="getItemClass(item.type)"
                   @click="
-                    item.type === 'healing'
-                      ? useHealingItem(index, iIndex)
+                    item.type === 'healing' || item.type === 'food'
+                      ? useItem(index, iIndex)
                       : selectItem(index, iIndex)
                   "
                 >
                   <span class="sr-only">Use</span>
                   <v-icon
                     :class="{
-                      'text-white': item.type === 'healing' || item.selected
+                      'text-white':
+                        item.type === 'healing' ||
+                        item.type === 'food' ||
+                        item.selected
                     }"
                     >{{ getItemIcon(item.type) }}</v-icon
                   >
@@ -176,6 +206,7 @@
             <v-radio label="Healing" value="healing" />
             <v-radio label="Weapon" value="weapon" />
             <v-radio label="Armor" value="armor" />
+            <v-radio label="Food" value="food" />
             <v-radio label="Other" value="other" />
           </v-radio-group>
           <v-text-field
@@ -249,17 +280,26 @@
             <strong>{{ players[sellPlayerIndex]?.name }}'s Gold:</strong>
             <span>{{ players[sellPlayerIndex]?.gold }}</span>
           </p>
-          <v-text-field
-            v-model.number="sellAmount"
-            label="Enter amount to sell item for"
-            type="number"
-            min="10"
-            step="10"
-          />
+          <div v-if="sellItemQuantity.value === 1">
+            <p>
+              Do you want to sell {{ sellItem.value.name }} for
+              {{ sellItem.value.value }} gold?
+            </p>
+          </div>
+          <div v-else>
+            <v-slider
+              v-model="sellAmount"
+              :min="1"
+              :max="sellItemQuantity.value"
+              step="1"
+              label="Quantity to sell"
+              thumb-label="always"
+            />
+          </div>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" @click="applySell">Sell</v-btn>
-          <v-btn color="error" @click="closeSellModal">Cancel</v-btn>
+          <v-btn color="primary" @click="confirmSell">Sell</v-btn>
+          <v-btn color="error" @click="isSellModalOpen = false">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -289,7 +329,7 @@ const isPayModalOpen = ref(false)
 const isSellModalOpen = ref(false)
 const restHours = ref(1)
 const payAmount = ref(10)
-const sellAmount = ref(10)
+const sellAmount = ref(1)
 const editIndex = ref(null)
 const newItem = ref({ name: '', type: 'other', stats: 0, quantity: 1 })
 const selectedPredefinedItem = ref(null)
@@ -298,6 +338,9 @@ const restPlayerIndex = ref(null)
 const payPlayerIndex = ref(null)
 const sellPlayerIndex = ref(null)
 const sellItemIndex = ref(null)
+const sellItemQuantity = ref(1)
+const sellItem = ref(null)
+const foodHealingTracker = ref({})
 
 const players = ref([...props.players])
 
@@ -337,7 +380,6 @@ const savePlayer = index => {
 }
 
 const openModal = index => {
-  console.log(`Opening modal for player at index: ${index}`)
   modalPlayerIndex.value = index
   newItem.value = { name: '', type: 'other', stats: 0, quantity: 1 }
   selectedPredefinedItem.value = null
@@ -345,11 +387,6 @@ const openModal = index => {
 }
 
 const addItem = () => {
-  console.log(
-    `Adding item: ${JSON.stringify(newItem.value)} to player index: ${
-      modalPlayerIndex.value
-    }`
-  )
   if (modalPlayerIndex.value !== null) {
     if (!players.value[modalPlayerIndex.value].inventory) {
       players.value[modalPlayerIndex.value].inventory = []
@@ -379,7 +416,7 @@ const addItem = () => {
         }
       } else {
         const newItemWithId = {
-          ...newItem.value,
+          ...newItem,
           id: `${newItem.type.charAt(0).toUpperCase()}${Date.now()}`
         }
         players.value[modalPlayerIndex.value].inventory.push({
@@ -389,7 +426,7 @@ const addItem = () => {
       }
     } else {
       const newItemWithId = {
-        ...newItem.value,
+        ...newItem,
         id: `${newItem.type.charAt(0).toUpperCase()}${Date.now()}`
       }
       players.value[modalPlayerIndex.value].inventory.push({
@@ -401,7 +438,6 @@ const addItem = () => {
     isModalOpen.value = false
     emit('players-updated', players.value)
     saveToLocalStorage()
-    console.log(`Updated players: ${JSON.stringify(players.value)}`)
   }
 }
 
@@ -436,30 +472,62 @@ const selectItem = (playerIndex, itemIndex) => {
   })
   emit('players-updated', players.value)
   saveToLocalStorage()
-  console.log(
-    `Updated players after selecting item: ${JSON.stringify(players.value)}`
-  )
 }
 
-const useHealingItem = (playerIndex, itemIndex) => {
+const useItem = (playerIndex, itemIndex) => {
   const player = players.value[playerIndex]
   const item = player.inventory[itemIndex]
 
-  player.hp = Math.min(player.hp + Number(item.stats), player.maxHP)
-  item.quantity -= 1
-  if (item.quantity <= 0) {
-    player.inventory.splice(itemIndex, 1)
+  if (item.type === 'healing') {
+    player.hp = Math.min(player.hp + Number(item.stats), player.maxHP)
+    item.quantity -= 1
+    if (item.quantity <= 0) {
+      player.inventory.splice(itemIndex, 1)
+    }
+    addNotification({
+      title: 'Healing Item Used',
+      message: `${player.name} healed for ${item.stats} HP`,
+      color: 'green'
+    })
+  } else if (item.type === 'food') {
+    if (!foodHealingTracker.value[player.name]) {
+      foodHealingTracker.value[player.name] = 0
+    }
+
+    const totalHealing = item.stats * 5
+    const maxHealing = player.maxHP - foodHealingTracker.value[player.name]
+    const appliedHealing = Math.min(totalHealing, maxHealing)
+    foodHealingTracker.value[player.name] += appliedHealing
+
+    player.hp = Math.min(player.hp + Number(item.stats), player.maxHP)
+    item.quantity -= 1
+    if (item.quantity <= 0) {
+      player.inventory.splice(itemIndex, 1)
+    }
+    addNotification({
+      title: 'Food Item Used',
+      message: `${player.name} consumed ${item.name} and will heal for ${item.stats} HP 5 times`,
+      color: 'red'
+    })
+
+    for (let i = 1; i <= 5; i++) {
+      setTimeout(() => {
+        if (foodHealingTracker.value[player.name] > 0) {
+          const healingAmount = Math.min(
+            Number(item.stats),
+            foodHealingTracker.value[player.name]
+          )
+          player.hp = Math.min(player.hp + healingAmount, player.maxHP)
+          foodHealingTracker.value[player.name] -= healingAmount
+          emit('players-updated', players.value)
+          saveToLocalStorage()
+        }
+      }, i * 60000)
+    }
   }
-  addNotification({
-    title: 'Healing Item Used',
-    message: `${player.name} healed for ${item.stats} HP`,
-    color: 'green'
-  })
+
   emit('players-updated', players.value)
   saveToLocalStorage()
-  console.log(
-    `Updated players after using healing item: ${JSON.stringify(players.value)}`
-  )
 }
 
 const deleteItem = (playerIndex, itemIndex) => {
@@ -547,38 +615,37 @@ const closePayModal = () => {
 const openSellModal = (playerIndex, itemIndex) => {
   sellPlayerIndex.value = playerIndex
   sellItemIndex.value = itemIndex
+  sellItem.value = players.value[playerIndex].inventory[itemIndex]
+  sellItemQuantity.value = sellItem.value.quantity
   isSellModalOpen.value = true
 }
 
-const applySell = () => {
+const confirmSell = () => {
   const player = players.value[sellPlayerIndex.value]
   const item = player.inventory[sellItemIndex.value]
 
-  // Unselect the item if it's selected
-  if (item.selected) {
-    if (item.type === 'weapon' && player.weapon.id === item.id) {
-      player.weapon = { id: null, name: '', stats: 0, type: 'weapon' }
-    } else if (item.type === 'armor' && player.armor.id === item.id) {
-      player.armor = { id: null, name: '', stats: 0, type: 'armor' }
-    }
+  if (sellItemQuantity.value === 1) {
+    player.gold += item.value
+    player.inventory.splice(sellItemIndex.value, 1)
+  } else {
+    player.gold += item.value * sellAmount.value
+    item.quantity -= sellAmount.value
   }
 
-  player.gold = Number(player.gold) + Number(sellAmount.value)
-  player.inventory.splice(sellItemIndex.value, 1)
   addNotification({
     title: 'Item Sold',
-    message: `Sold ${item.name} for ${sellAmount.value} gold`,
+    message: `Sold ${item.name} for ${item.value * sellAmount.value} gold`,
     color: 'yellow'
   })
   isSellModalOpen.value = false
-  sellAmount.value = 10 // Reset the sell amount
+  sellAmount.value = 1 // Reset the sell amount
   emit('players-updated', players.value)
   saveToLocalStorage()
 }
 
 const closeSellModal = () => {
   isSellModalOpen.value = false
-  sellAmount.value = 10 // Reset the sell amount
+  sellAmount.value = 1 // Reset the sell amount
 }
 
 const getItemIcon = type => {
@@ -589,6 +656,8 @@ const getItemIcon = type => {
       return 'mdi-sword'
     case 'armor':
       return 'mdi-shield'
+    case 'food':
+      return 'mdi-food'
     default:
       return 'mdi-help-circle'
   }
@@ -602,9 +671,15 @@ const getItemClass = type => {
       return 'bg-blue-500 text-white'
     case 'armor':
       return 'bg-blue-300 text-white'
+    case 'food':
+      return 'bg-red-500 text-white'
     default:
       return 'bg-gray-500 text-white'
   }
+}
+
+const foodHealingRemaining = player => {
+  return foodHealingTracker.value[player.name] || 0
 }
 
 watch(players, newPlayers => {

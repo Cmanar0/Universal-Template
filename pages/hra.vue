@@ -38,13 +38,15 @@ import {
   weapons as weaponItems,
   armors as armorItems,
   healingItems as healingItemArray,
-  otherItems as otherItemArray
+  otherItems as otherItemArray,
+  foodItems as foodItemsArray
 } from '../items'
 
 const weapons = ref(weaponItems)
 const armors = ref(armorItems)
 const healingItems = ref(healingItemArray)
 const otherItems = ref(otherItemArray)
+const foodItems = ref(foodItemsArray)
 
 const players = ref([
   {
@@ -104,7 +106,8 @@ const allItems = computed(() => [
   ...weapons.value,
   ...armors.value,
   ...healingItems.value,
-  ...otherItems.value
+  ...otherItems.value,
+  ...foodItems.value
 ])
 
 const updatePlayers = newPlayers => {
