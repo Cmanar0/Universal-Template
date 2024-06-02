@@ -14,6 +14,7 @@
           <battle-simulator
             :players="players"
             :enemies="enemies"
+            :enemy-types="enemyTypes"
             :weapons="weapons"
             :armors="armors"
             :battle-log="battleLog"
@@ -33,13 +34,13 @@ import BattleSimulator from '../components/dnd/BattleSimulator.vue'
 import Notification from '../components/reusable/Notification.vue'
 
 const weapons = ref([
-  { id: 1, name: 'Prak', stats: 6, type: 'weapon' },
-  { id: 2, name: 'Stříbrná dýka', stats: 8, type: 'weapon' }
+  { id: 1, name: 'Prak', stats: 6, type: 'weapon', level: 1 },
+  { id: 2, name: 'Stříbrná dýka', stats: 8, type: 'weapon', level: 1 }
 ])
 
 const armors = ref([
-  { id: 1, name: 'Mystické roucho', stats: 5, type: 'armor' },
-  { id: 2, name: 'Ledové roucho', stats: 6, type: 'armor' }
+  { id: 1, name: 'Mystické roucho', stats: 5, type: 'armor', level: 1 },
+  { id: 2, name: 'Ledové roucho', stats: 6, type: 'armor', level: 1 }
 ])
 
 const players = ref([
@@ -71,22 +72,30 @@ const players = ref([
 
 const enemies = ref([
   {
-    name: 'Goblin',
-    hp: 15,
-    maxHP: 15,
+    name: 'Wizard',
+    hp: 150,
+    maxHP: 150,
     gold: 0,
-    weapon: { id: 3, name: 'Club', stats: 5, type: 'weapon' },
-    armor: { id: 3, name: 'Leather Armor', stats: 3, type: 'armor' },
+    weapon: { id: 3, name: 'Magical Staff', stats: 30, type: 'weapon' },
+    armor: { id: 3, name: 'Wizard cloak Armor', stats: 25, type: 'armor' },
     inventory: []
+  }
+])
+
+const enemyTypes = ref([
+  {
+    name: 'Goblin',
+    level: 1,
+    maxHP: 10,
+    weapon: {},
+    armor: {}
   },
   {
     name: 'Orc',
-    hp: 30,
+    level: 2,
     maxHP: 30,
-    gold: 0,
-    weapon: { id: 4, name: 'Axe', stats: 10, type: 'weapon' },
-    armor: { id: 4, name: 'Chainmail', stats: 7, type: 'armor' },
-    inventory: []
+    weapon: {},
+    armor: {}
   }
 ])
 

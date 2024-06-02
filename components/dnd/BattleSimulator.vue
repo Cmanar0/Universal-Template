@@ -8,7 +8,7 @@
             :items="filteredParticipants"
             :search-input.sync="search"
             item-title="name"
-            item-value="id"
+            item-value="name"
             label="Select Participant to Add"
             density="comfortable"
             return-object
@@ -72,7 +72,12 @@
             >
               <v-icon color="red">mdi-close</v-icon>
             </v-btn>
-            <v-card-title>{{ participant.name }}</v-card-title>
+            <v-card-title>
+              {{ participant.name }}
+              <span v-if="participant.level">
+                (Level: {{ participant.level }})</span
+              >
+            </v-card-title>
             <v-card-text>
               <p>
                 <strong>HP:</strong> {{ participant.hp }} /
@@ -144,9 +149,12 @@ import { addNotification } from '../../stores/notificationStore'
 const props = defineProps({
   players: Array,
   enemies: Array,
+  enemyTypes: Array, // New prop to include all enemy types
   weapons: Array,
   armors: Array
 })
+
+const emit = defineEmits(['participant-defeated']) // New emit for defeated participant
 
 const selectedParticipant = ref(null)
 const battleParticipants = ref([])
@@ -157,7 +165,7 @@ const inputNumber = ref(null)
 const search = ref('')
 
 const allParticipants = computed(() => {
-  const allEntities = [...props.players, ...props.enemies]
+  const allEntities = [...props.players, ...props.enemies, ...props.enemyTypes]
   return allEntities.map((entity, index) => ({
     id: index,
     name: entity.name,
@@ -165,7 +173,8 @@ const allParticipants = computed(() => {
     maxHP: entity.maxHP,
     gold: entity.gold,
     weapon: entity.weapon,
-    armor: entity.armor
+    armor: entity.armor,
+    level: entity.level // Ensure level is included
   }))
 })
 
@@ -181,6 +190,39 @@ const filteredParticipants = computed(() => {
 const addToBattle = () => {
   if (selectedParticipant.value) {
     const newParticipant = { ...selectedParticipant.value }
+
+    // Only adjust attributes if the participant is an enemy type
+    if (
+      props.enemyTypes.some(enemyType => enemyType.name === newParticipant.name)
+    ) {
+      // Assign random weapon and armor based on level
+      const level = newParticipant.level || 1
+      const availableWeapons = props.weapons.filter(
+        weapon => weapon.level === level
+      )
+      const availableArmors = props.armors.filter(
+        armor => armor.level === level
+      )
+
+      if (availableWeapons.length > 0) {
+        newParticipant.weapon =
+          availableWeapons[Math.floor(Math.random() * availableWeapons.length)]
+      }
+      if (availableArmors.length > 0) {
+        newParticipant.armor =
+          availableArmors[Math.floor(Math.random() * availableArmors.length)]
+      }
+
+      // Adjust HP
+      const hpAdjustmentFactor = Math.random() * 0.4 + 0.8
+      newParticipant.maxHP = Math.round(
+        newParticipant.maxHP * hpAdjustmentFactor
+      )
+      newParticipant.hp = Math.round(
+        newParticipant.maxHP * (Math.random() * 0.5 + 0.5)
+      )
+    }
+
     battleParticipants.value.push(newParticipant)
     selectedParticipant.value = null
     search.value = ''
@@ -266,7 +308,18 @@ const simulateAttack = () => {
         message: `${attacker.name} gained ${goldGained} gold!`,
         color: 'yellow'
       })
+
+      // Transfer items to attacker
+      if (defender.weapon.name) {
+        attacker.inventory.push(defender.weapon)
+      }
+      if (defender.armor.name) {
+        attacker.inventory.push(defender.armor)
+      }
     }
+
+    // Emit event to transfer items and remove participant
+    emit('participant-defeated', { attacker, defender })
 
     battleParticipants.value.splice(defenderIndex.value, 1)
     if (defenderIndex.value === attackerIndex.value) {
@@ -302,6 +355,16 @@ watch(
   },
   { deep: true }
 )
+
+onMounted(() => {
+  if (
+    props.players.length > 0 ||
+    props.enemies.length > 0 ||
+    props.enemyTypes.length > 0
+  ) {
+    selectedParticipant.value = allParticipants.value[0]
+  }
+})
 </script>
 
 <style scoped>
