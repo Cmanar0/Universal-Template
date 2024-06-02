@@ -138,22 +138,44 @@ const savePlayersToLocalStorage = () => {
 const handleParticipantDefeated = ({ attacker, defender }) => {
   const player = players.value.find(p => p.name === attacker.name)
   if (player) {
-    if (defender.weapon.name) {
-      player.inventory.push(defender.weapon)
-    }
-    if (defender.armor.name) {
-      player.inventory.push(defender.armor)
-    }
-    defender.inventory.forEach(item => {
-      const existingItem = player.inventory.find(
-        invItem => invItem.id === item.id
+    // Add defender's weapon to attacker's inventory
+    if (defender.weapon && defender.weapon.name) {
+      const weaponItem = player.inventory.find(
+        invItem => invItem.id === defender.weapon.id
       )
-      if (existingItem) {
-        existingItem.quantity = (existingItem.quantity || 1) + 1
+      if (weaponItem) {
+        weaponItem.quantity = (weaponItem.quantity || 1) + 1
       } else {
-        player.inventory.push({ ...item, quantity: 1 })
+        player.inventory.push({ ...defender.weapon, quantity: 1 })
       }
-    })
+    }
+
+    // Add defender's armor to attacker's inventory
+    if (defender.armor && defender.armor.name) {
+      const armorItem = player.inventory.find(
+        invItem => invItem.id === defender.armor.id
+      )
+      if (armorItem) {
+        armorItem.quantity = (armorItem.quantity || 1) + 1
+      } else {
+        player.inventory.push({ ...defender.armor, quantity: 1 })
+      }
+    }
+
+    // Add defender's inventory items to attacker's inventory
+    if (defender.inventory) {
+      defender.inventory.forEach(item => {
+        const existingItem = player.inventory.find(
+          invItem => invItem.id === item.id
+        )
+        if (existingItem) {
+          existingItem.quantity = (existingItem.quantity || 1) + 1
+        } else {
+          player.inventory.push({ ...item, quantity: 1 })
+        }
+      })
+    }
+
     updatePlayers([...players.value]) // Trigger update
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="">
+  <div>
     <div
       v-for="(player, index) in players"
       :key="index"
@@ -11,7 +11,7 @@
         <v-text-field v-model="player.maxHP" label="Max HP" type="number" />
         <v-text-field v-model="player.gold" label="Gold" type="number" />
         <v-btn color="success" @click="savePlayer(index)">Save</v-btn>
-        <v-btn disabled="true" color="error ml-2" @click="removePlayer(index)"
+        <v-btn disabled color="error ml-2" @click="removePlayer(index)"
           >Remove</v-btn
         >
       </div>
@@ -271,12 +271,14 @@ import { ref, watch, onMounted } from 'vue'
 import { addNotification } from '../stores/notificationStore'
 
 const props = defineProps({
-  items: Array, // Use the combined items array
+  weapons: Array,
+  armors: Array,
   players: {
     type: Array,
     required: true,
     default: () => []
-  }
+  },
+  items: Array
 })
 
 const emit = defineEmits(['players-updated'])
@@ -290,7 +292,7 @@ const payAmount = ref(10)
 const sellAmount = ref(10)
 const editIndex = ref(null)
 const newItem = ref({ name: '', type: 'other', stats: 0, quantity: 1 })
-const selectedPredefinedItem = ref(null) // Add a ref for the selected predefined item
+const selectedPredefinedItem = ref(null)
 const modalPlayerIndex = ref(null)
 const restPlayerIndex = ref(null)
 const payPlayerIndex = ref(null)
@@ -352,56 +354,56 @@ const addItem = () => {
     if (!players.value[modalPlayerIndex.value].inventory) {
       players.value[modalPlayerIndex.value].inventory = []
     }
-    const existingItem = players.value[modalPlayerIndex.value].inventory.find(
-      item => item.id === newItem.value.id
-    )
-    if (existingItem) {
-      existingItem.quantity += newItem.value.quantity
-    } else {
-      if (selectedPredefinedItem.value && !hasItemChanged()) {
-        // Add predefined item without new ID
-        players.value[modalPlayerIndex.value].inventory.push({
-          ...newItem.value
-        })
+
+    if (selectedPredefinedItem.value) {
+      const predefinedItem = props.items.find(
+        item => item.id === selectedPredefinedItem.value
+      )
+
+      if (
+        predefinedItem.name === newItem.name &&
+        predefinedItem.type === newItem.type &&
+        predefinedItem.stats === newItem.stats
+      ) {
+        const existingItem = players.value[
+          modalPlayerIndex.value
+        ].inventory.find(item => item.id === predefinedItem.id)
+
+        if (existingItem) {
+          existingItem.quantity += newItem.quantity
+        } else {
+          players.value[modalPlayerIndex.value].inventory.push({
+            ...predefinedItem,
+            quantity: newItem.quantity
+          })
+        }
       } else {
-        // Add new item with new ID
-        players.value[modalPlayerIndex.value].inventory.push({
+        const newItemWithId = {
           ...newItem.value,
-          id: generateNewId(newItem.value.type)
+          id: `${newItem.type.charAt(0).toUpperCase()}${Date.now()}`
+        }
+        players.value[modalPlayerIndex.value].inventory.push({
+          ...newItemWithId,
+          quantity: newItem.quantity
         })
       }
+    } else {
+      const newItemWithId = {
+        ...newItem.value,
+        id: `${newItem.type.charAt(0).toUpperCase()}${Date.now()}`
+      }
+      players.value[modalPlayerIndex.value].inventory.push({
+        ...newItemWithId,
+        quantity: newItem.quantity
+      })
     }
+
     isModalOpen.value = false
     emit('players-updated', players.value)
     saveToLocalStorage()
     console.log(`Updated players: ${JSON.stringify(players.value)}`)
   }
 }
-
-const hasItemChanged = () => {
-  const selectedItem = props.items.find(
-    item => item.id === selectedPredefinedItem.value
-  )
-  return (
-    selectedItem.name !== newItem.value.name ||
-    selectedItem.type !== newItem.value.type ||
-    selectedItem.stats !== newItem.value.stats
-  )
-}
-
-const generateNewId = type => {
-  const prefix = type.charAt(0).toUpperCase()
-  return `${prefix}-${Math.random().toString(36).substr(2, 9)}`
-}
-
-watch(selectedPredefinedItem, newVal => {
-  if (newVal) {
-    const selectedItem = props.items.find(item => item.id === newVal)
-    newItem.value = { ...selectedItem, quantity: 1 }
-  } else {
-    newItem.value = { name: '', type: 'other', stats: 0, quantity: 1 }
-  }
-})
 
 const selectItem = (playerIndex, itemIndex) => {
   const player = players.value[playerIndex]
@@ -611,6 +613,21 @@ watch(players, newPlayers => {
 
 watch(props.players, newPlayers => {
   players.value = [...newPlayers]
+})
+
+watch(selectedPredefinedItem, newValue => {
+  if (newValue) {
+    const predefinedItem = props.items.find(item => item.id === newValue)
+    newItem.name = predefinedItem.name
+    newItem.type = predefinedItem.type
+    newItem.stats = predefinedItem.stats
+    newItem.quantity = 1
+  } else {
+    newItem.name = ''
+    newItem.type = 'other'
+    newItem.stats = 0
+    newItem.quantity = 1
+  }
 })
 </script>
 

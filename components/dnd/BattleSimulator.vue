@@ -142,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import BattleLog from './BattleLog.vue'
 import { addNotification } from '../../stores/notificationStore'
 
@@ -190,9 +190,6 @@ const filteredParticipants = computed(() => {
 const addToBattle = () => {
   if (selectedParticipant.value) {
     const newParticipant = { ...selectedParticipant.value }
-
-    // Ensure inventory is initialized
-    newParticipant.inventory = newParticipant.inventory || []
 
     // Only adjust attributes if the participant is an enemy type
     if (
@@ -269,10 +266,6 @@ const simulateAttack = () => {
   const attacker = battleParticipants.value[attackerIndex.value]
   const defender = battleParticipants.value[defenderIndex.value]
 
-  // Ensure inventory is initialized
-  attacker.inventory = attacker.inventory || []
-  defender.inventory = defender.inventory || []
-
   const diceRoll = inputNumber.value
   const totalAttack = diceRoll + attacker.weapon.stats
   const totalDefense = defender.armor.stats
@@ -315,20 +308,18 @@ const simulateAttack = () => {
         message: `${attacker.name} gained ${goldGained} gold!`,
         color: 'yellow'
       })
-      console.log(' attacker :>> ', attacker)
-      // Transfer items to attacker
-      if (defender.weapon.name) {
-        attacker.inventory.push(defender.weapon)
-      }
-      if (defender.armor.name) {
-        attacker.inventory.push(defender.armor)
-      }
     }
 
     // Emit event to transfer items and remove participant
     emit('participant-defeated', { attacker, defender })
 
-    battleParticipants.value.splice(defenderIndex.value, 1)
+    // Remove the defeated defender from the battle participants
+    const removed = battleParticipants.value.splice(defenderIndex.value, 1)
+    battleLog.value.unshift(
+      `<span class="text-red-600">${removed[0].name} has been removed from the battle!</span>`
+    )
+
+    // Reset indices if necessary
     if (defenderIndex.value === attackerIndex.value) {
       attackerIndex.value = null
     }
@@ -348,7 +339,6 @@ const simulateAttack = () => {
   // Clear the input field
   inputNumber.value = null
 }
-
 watch(
   () => props.players,
   newPlayers => {
@@ -364,15 +354,13 @@ watch(
 )
 
 onMounted(() => {
-  nextTick(() => {
-    if (
-      props.players.length > 0 ||
-      props.enemies.length > 0 ||
-      props.enemyTypes.length > 0
-    ) {
-      selectedParticipant.value = allParticipants.value[0]
-    }
-  })
+  if (
+    props.players.length > 0 ||
+    props.enemies.length > 0 ||
+    props.enemyTypes.length > 0
+  ) {
+    selectedParticipant.value = allParticipants.value[0]
+  }
 })
 </script>
 
