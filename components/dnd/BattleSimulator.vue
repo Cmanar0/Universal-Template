@@ -197,14 +197,16 @@ const addToBattle = () => {
     if (
       props.enemyTypes.some(enemyType => enemyType.name === newParticipant.name)
     ) {
+      const enemyType = props.enemyTypes.find(
+        enemyType => enemyType.name === newParticipant.name
+      )
+      const level = enemyType.level
+
       // Assign random weapon and armor based on level
-      const level = newParticipant.level || 1
       const availableWeapons = props.weapons.filter(
-        weapon => weapon.level === level
+        weapon => weapon.level <= level
       )
-      const availableArmors = props.armors.filter(
-        armor => armor.level === level
-      )
+      const availableArmors = props.armors.filter(armor => armor.level <= level)
 
       if (availableWeapons.length > 0) {
         newParticipant.weapon =
@@ -227,11 +229,17 @@ const addToBattle = () => {
       // Add random items to inventory
       newParticipant.inventory = newParticipant.inventory || []
 
-      // Add healing items
-      if (Math.floor(Math.random() * 10) + 1 > 8) {
+      // Add healing items of the same or lower level
+      const availableHealingItems = props.healingItems.filter(
+        item => item.level <= level
+      )
+      if (
+        Math.floor(Math.random() * 10) + 1 > 5 &&
+        availableHealingItems.length > 0
+      ) {
         const healingItem =
-          props.healingItems[
-            Math.floor(Math.random() * props.healingItems.length)
+          availableHealingItems[
+            Math.floor(Math.random() * availableHealingItems.length)
           ]
         newParticipant.inventory.push(healingItem)
         console.log(
@@ -239,12 +247,18 @@ const addToBattle = () => {
         )
       }
 
-      // Add other items (attempt twice)
-      for (let i = 0; i < 3; i++) {
-        if (Math.floor(Math.random() * 10) + 1 > 7) {
+      // Add other items of the same or lower level (attempt twice)
+      const availableOtherItems = props.otherItems.filter(
+        item => item.level <= level
+      )
+      for (let i = 0; i < 2; i++) {
+        if (
+          Math.floor(Math.random() * 10) + 1 > 5 &&
+          availableOtherItems.length > 0
+        ) {
           const otherItem =
-            props.otherItems[
-              Math.floor(Math.random() * props.otherItems.length)
+            availableOtherItems[
+              Math.floor(Math.random() * availableOtherItems.length)
             ]
           newParticipant.inventory.push(otherItem)
           console.log(

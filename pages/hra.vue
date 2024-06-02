@@ -34,34 +34,17 @@ import { ref, computed } from 'vue'
 import PlayerManager from '../components/dnd/PlayerManager.vue'
 import BattleSimulator from '../components/dnd/BattleSimulator.vue'
 import Notification from '../components/reusable/Notification.vue'
+import {
+  weapons as weaponItems,
+  armors as armorItems,
+  healingItems as healingItemArray,
+  otherItems as otherItemArray
+} from '../items'
 
-const weapons = ref([
-  { id: 'W1', name: 'Prak', stats: 6, type: 'weapon', level: 1 },
-  { id: 'W2', name: 'Stříbrná dýka', stats: 8, type: 'weapon', level: 1 },
-  { id: 'W3', name: 'Zlatá dýka', stats: 10, type: 'weapon', level: 2 },
-  { id: 'W4', name: 'Long Sword', stats: 12, type: 'weapon', level: 3 },
-  { id: 'W5', name: 'Battle Axe', stats: 15, type: 'weapon', level: 3 }
-])
-
-const armors = ref([
-  { id: 'A1', name: 'Mystické roucho', stats: 5, type: 'armor', level: 1 },
-  { id: 'A2', name: 'Ledové roucho', stats: 6, type: 'armor', level: 1 },
-  { id: 'A3', name: 'Kovové roucho', stats: 8, type: 'armor', level: 2 },
-  { id: 'A4', name: 'Chainmail', stats: 10, type: 'armor', level: 3 },
-  { id: 'A5', name: 'Plate Armor', stats: 12, type: 'armor', level: 3 }
-])
-
-const healingItems = ref([
-  { id: 'H1', name: 'Minor Healing Potion', stats: 10, type: 'healing' },
-  { id: 'H2', name: 'Major Healing Potion', stats: 20, type: 'healing' },
-  { id: 'H3', name: 'Elixir of Life', stats: 50, type: 'healing' }
-])
-
-const otherItems = ref([
-  { id: 'O1', name: 'Gold Coin', stats: 1, type: 'other', value: 10 },
-  { id: 'O2', name: 'Silver Coin', stats: 1, type: 'other', value: 5 },
-  { id: 'O3', name: 'Ancient Relic', stats: 0, type: 'other', value: 100 }
-])
+const weapons = ref(weaponItems)
+const armors = ref(armorItems)
+const healingItems = ref(healingItemArray)
+const otherItems = ref(otherItemArray)
 
 const players = ref([
   {
