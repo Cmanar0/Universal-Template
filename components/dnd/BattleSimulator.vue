@@ -142,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import BattleLog from './BattleLog.vue'
 import { addNotification } from '../../stores/notificationStore'
 
@@ -190,6 +190,9 @@ const filteredParticipants = computed(() => {
 const addToBattle = () => {
   if (selectedParticipant.value) {
     const newParticipant = { ...selectedParticipant.value }
+
+    // Ensure inventory is initialized
+    newParticipant.inventory = newParticipant.inventory || []
 
     // Only adjust attributes if the participant is an enemy type
     if (
@@ -266,6 +269,10 @@ const simulateAttack = () => {
   const attacker = battleParticipants.value[attackerIndex.value]
   const defender = battleParticipants.value[defenderIndex.value]
 
+  // Ensure inventory is initialized
+  attacker.inventory = attacker.inventory || []
+  defender.inventory = defender.inventory || []
+
   const diceRoll = inputNumber.value
   const totalAttack = diceRoll + attacker.weapon.stats
   const totalDefense = defender.armor.stats
@@ -308,7 +315,7 @@ const simulateAttack = () => {
         message: `${attacker.name} gained ${goldGained} gold!`,
         color: 'yellow'
       })
-
+      console.log(' attacker :>> ', attacker)
       // Transfer items to attacker
       if (defender.weapon.name) {
         attacker.inventory.push(defender.weapon)
@@ -357,13 +364,15 @@ watch(
 )
 
 onMounted(() => {
-  if (
-    props.players.length > 0 ||
-    props.enemies.length > 0 ||
-    props.enemyTypes.length > 0
-  ) {
-    selectedParticipant.value = allParticipants.value[0]
-  }
+  nextTick(() => {
+    if (
+      props.players.length > 0 ||
+      props.enemies.length > 0 ||
+      props.enemyTypes.length > 0
+    ) {
+      selectedParticipant.value = allParticipants.value[0]
+    }
+  })
 })
 </script>
 

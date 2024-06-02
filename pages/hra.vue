@@ -35,12 +35,14 @@ import Notification from '../components/reusable/Notification.vue'
 
 const weapons = ref([
   { id: 1, name: 'Prak', stats: 6, type: 'weapon', level: 1 },
-  { id: 2, name: 'Stříbrná dýka', stats: 8, type: 'weapon', level: 1 }
+  { id: 2, name: 'Stříbrná dýka', stats: 8, type: 'weapon', level: 1 },
+  { id: 3, name: 'Zlatá dýka', stats: 8, type: 'weapon', level: 2 }
 ])
 
 const armors = ref([
   { id: 1, name: 'Mystické roucho', stats: 5, type: 'armor', level: 1 },
-  { id: 2, name: 'Ledové roucho', stats: 6, type: 'armor', level: 1 }
+  { id: 2, name: 'Ledové roucho', stats: 6, type: 'armor', level: 1 },
+  { id: 3, name: 'Kovové roucho', stats: 6, type: 'armor', level: 2 }
 ])
 
 const players = ref([
@@ -86,14 +88,14 @@ const enemyTypes = ref([
   {
     name: 'Goblin',
     level: 1,
-    maxHP: 10,
+    maxHP: 5,
     weapon: {},
     armor: {}
   },
   {
     name: 'Orc',
     level: 2,
-    maxHP: 30,
+    maxHP: 10,
     weapon: {},
     armor: {}
   }
