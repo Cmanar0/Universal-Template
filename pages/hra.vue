@@ -52,7 +52,7 @@ const itemTypes = [
   { value: 'all', icon: 'mdi-hops', color: 'grey' },
   { value: 'weapons', icon: 'mdi-sword-cross', color: 'red' },
   { value: 'armors', icon: 'mdi-shield', color: 'blue' },
-  { value: 'healingItems', icon: 'mdi-soy-sauce', color: 'green' },
+  { value: 'healingItems', icon: 'mdi-heart-plus', color: 'green' },
   { value: 'otherItems', icon: 'mdi-shovel', color: 'purple' },
   { value: 'foodItems', icon: 'mdi-food-apple', color: 'orange' }
 ]

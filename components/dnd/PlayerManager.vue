@@ -1,64 +1,39 @@
 <template>
   <div>
-    <div
-      v-for="(player, index) in players"
-      :key="index"
-      class="m-4 p-4 border bg-white shadow-md rounded-lg"
-    >
+    <div v-for="(player, index) in players" :key="index" class="m-4 p-4 border bg-white shadow-md rounded-lg">
       <div v-if="editIndex === index">
         <v-text-field v-model="player.name" label="Player Name" />
         <v-text-field v-model="player.hp" label="HP" type="number" />
         <v-text-field v-model="player.maxHP" label="Max HP" type="number" />
         <v-text-field v-model="player.gold" label="Gold" type="number" />
         <v-btn color="success" @click="savePlayer(index)">Save</v-btn>
-        <v-btn disabled color="error ml-2" @click="removePlayer(index)"
-          >Remove</v-btn
-        >
+        <v-btn disabled color="error ml-2" @click="removePlayer(index)">Remove</v-btn>
       </div>
       <div v-else>
         <div class="flex justify-between mb-4">
           <div>
             <div class="flex items-center mb-4">
               <h1 class="text-2xl font-bold">{{ player.name }}</h1>
-              <v-btn class="ml-4" color="primary" @click="editIndex = index"
-                >Edit</v-btn
-              >
-              <v-btn
-                class="ml-4"
-                color="secondary"
-                @click="openRestModal(index)"
-                >Rest</v-btn
-              >
-              <v-btn class="ml-4" color="warning" @click="openPayModal(index)"
-                >Pay</v-btn
-              >
+              <v-btn class="ml-4" color="primary" @click="editIndex = index">Edit</v-btn>
+              <v-btn class="ml-4" color="secondary" @click="openRestModal(index)">Rest</v-btn>
+              <v-btn class="ml-4" color="warning" @click="openPayModal(index)">Pay</v-btn>
             </div>
             <p class="flex items-center">
               <strong>HP:</strong>
               <span class="ml-2">{{ player.hp }} / {{ player.maxHP }}</span>
             </p>
-            <div
-              class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2 min-w-80"
-            >
-              <div
-                class="absolute top-0 left-0 h-full bg-green-500"
-                :style="{ width: (player.hp / player.maxHP) * 100 + '%' }"
-              ></div>
+            <div class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2 min-w-80">
+              <div class="absolute top-0 left-0 h-full bg-green-500" :style="{ width: (player.hp / player.maxHP) * 100 + '%' }"></div>
             </div>
             <p class="flex items-center">
               <strong>Food Healing:</strong>
-              <span class="ml-2">{{
-                foodHealingRemaining(player) + ' / ' + player.maxHP
-              }}</span>
+              <span class="ml-2">{{ foodHealingRemaining(player) + ' / ' + player.maxHP }}</span>
             </p>
-            <div
-              class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2 min-w-80"
-            >
+            <div class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2 min-w-80">
               <div
                 class="absolute top-0 left-0 h-full bg-red-500"
                 :style="{
-                  width:
-                    (foodHealingRemaining(player) / player.maxHP) * 100 + '%'
+                  width: (foodHealingRemaining(player) / player.maxHP) * 100 + '%'
                 }"
               ></div>
             </div>
@@ -66,9 +41,7 @@
           <div class="flex flex-col items-end space-y-2">
             <div class="flex items-center space-x-2">
               <strong>Gold:</strong>
-              <span class="text-yellow-600 bg-yellow-100 p-1 rounded">{{
-                player.gold
-              }}</span>
+              <span class="text-yellow-600 bg-yellow-100 p-1 rounded">{{ player.gold }}</span>
             </div>
             <div class="flex items-center space-x-2">
               <strong>Weapon:</strong>
@@ -84,92 +57,44 @@
         </div>
       </div>
       <div class="flex space-x-2 mb-2">
-        <v-btn color="primary" @click="openModalCreateItem(index)" block
-          >Create ITEM</v-btn
-        >
+        <v-btn color="primary" @click="openModalCreateItem(index)" block>Create ITEM</v-btn>
       </div>
       <div class="flex space-x-2 mb-2">
-        <v-btn color="primary" @click="openModalAddItem(index)" block
-          >ADD ITEM</v-btn
-        >
+        <v-btn color="primary" @click="openModalAddItem(index)" block>ADD ITEM</v-btn>
       </div>
       <div class="overflow-x-auto mt-4">
         <table class="min-w-full divide-y divide-gray-200 inventory-table">
           <thead class="bg-gray-50">
             <tr>
-              <th
-                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Item
-              </th>
-              <th
-                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Type
-              </th>
-              <th
-                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Stats
-              </th>
-              <th
-                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Level
-              </th>
-              <th
-                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Value
-              </th>
-              <th
-                class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Amount
-              </th>
-              <th
-                class="px-6 py-2 whitespace-nowrap text-sm font-medium actions"
-              >
-                -
-              </th>
+              <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+              <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+              <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
+              <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+              <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+              <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th class="px-6 py-2 whitespace-nowrap text-sm font-medium actions">-</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr
-              v-for="(item, iIndex) in player.inventory"
-              :key="iIndex"
-              :class="{ 'bg-gray-100': item.selected }"
-            >
+            <tr v-for="(item, iIndex) in player.inventory" :key="iIndex" :class="{ 'bg-gray-100': item.selected }">
               <td class="px-6 py-2 whitespace-nowrap">{{ item.name }}</td>
-              <td
-                class="px-6 py-2 whitespace-nowrap"
-                :class="getItemClass(item.type)"
-              >
+              <td class="px-6 py-2 whitespace-nowrap" :class="getItemClass(item.type)">
                 {{ item.type }}
               </td>
               <td class="px-6 py-2 whitespace-nowrap">{{ item.stats }}</td>
               <td class="px-6 py-2 whitespace-nowrap">{{ item.level }}</td>
               <td class="px-6 py-2 whitespace-nowrap">{{ item.value }}</td>
               <td class="px-6 py-2 whitespace-nowrap">{{ item.quantity }}</td>
-              <td
-                class="px-6 py-2 whitespace-nowrap text-sm font-medium actions"
-              >
+              <td class="px-6 py-2 whitespace-nowrap text-sm font-medium actions">
                 <button
                   class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   :class="getItemClass(item.type)"
-                  @click="
-                    item.type === 'healing' || item.type === 'food'
-                      ? useItem(index, iIndex)
-                      : selectItem(index, iIndex)
-                  "
+                  @click="item.type === 'healing' || item.type === 'food' ? useItem(index, iIndex) : selectItem(index, iIndex)"
                 >
                   <span class="sr-only">Use</span>
                   <v-icon
                     :class="{
-                      'text-white':
-                        item.type === 'healing' ||
-                        item.type === 'food' ||
-                        item.selected
+                      'text-white': item.type === 'healing' || item.type === 'food' || item.selected
                     }"
                     >{{ getItemIcon(item.type) }}</v-icon
                   >
@@ -200,27 +125,12 @@
       <v-card>
         <v-card-title>Add Item</v-card-title>
         <v-card-text>
-          <v-select
-            v-model="selectedPredefinedItem"
-            :items="items"
-            item-title="name"
-            item-value="id"
-            label="Select Predefined Item"
-            dense
-            clearable
-            outlined
-          ></v-select>
-          <v-text-field
-            v-model.number="newItem.quantity"
-            label="Quantity"
-            type="number"
-          />
+          <v-select v-model="selectedPredefinedItem" :items="items" item-title="name" item-value="id" label="Select Predefined Item" dense clearable outlined></v-select>
+          <v-text-field v-model.number="newItem.quantity" label="Quantity" type="number" />
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" @click="addItem">Add</v-btn>
-          <v-btn color="error" @click="isModalOpenAddItem = false"
-            >Cancel</v-btn
-          >
+          <v-btn color="error" @click="isModalOpenAddItem = false">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -237,33 +147,14 @@
             <v-radio label="Food" value="food" />
             <v-radio label="Other" value="other" />
           </v-radio-group>
-          <v-text-field
-            v-model.number="newItem.stats"
-            label="Stats"
-            v-if="newItem.type !== 'other'"
-            type="number"
-          />
-          <v-text-field
-            v-model.number="newItem.level"
-            label="Level"
-            type="number"
-          />
-          <v-text-field
-            v-model.number="newItem.value"
-            label="Value"
-            type="number"
-          />
-          <v-text-field
-            v-model.number="newItem.quantity"
-            label="Quantity"
-            type="number"
-          />
+          <v-text-field v-model.number="newItem.stats" label="Stats" v-if="newItem.type !== 'other'" type="number" />
+          <v-text-field v-model.number="newItem.level" label="Level" type="number" />
+          <v-text-field v-model.number="newItem.value" label="Value" type="number" />
+          <v-text-field v-model.number="newItem.quantity" label="Quantity" type="number" />
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" @click="createItem">Add</v-btn>
-          <v-btn color="error" @click="isModalOpenCreateItem = false"
-            >Cancel</v-btn
-          >
+          <v-btn color="error" @click="isModalOpenCreateItem = false">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -272,13 +163,7 @@
       <v-card>
         <v-card-title>Rest</v-card-title>
         <v-card-text>
-          <v-text-field
-            v-model.number="restHours"
-            label="Enter hours to rest"
-            type="number"
-            min="1"
-            step="1"
-          />
+          <v-text-field v-model.number="restHours" label="Enter hours to rest" type="number" min="1" step="1" />
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" @click="applyRest">Rest</v-btn>
@@ -295,21 +180,10 @@
             <strong>{{ players[payPlayerIndex]?.name }}'s Gold:</strong>
             <span>{{ players[payPlayerIndex]?.gold }}</span>
           </p>
-          <v-text-field
-            v-model.number="payAmount"
-            label="Enter amount to pay"
-            type="number"
-            min="10"
-            step="10"
-          />
+          <v-text-field v-model.number="payAmount" label="Enter amount to pay" type="number" min="10" step="10" />
         </v-card-text>
         <v-card-actions>
-          <v-btn
-            color="primary"
-            @click="applyPay"
-            :disabled="payAmount > players[payPlayerIndex]?.gold"
-            >Pay</v-btn
-          >
+          <v-btn color="primary" @click="applyPay" :disabled="payAmount > players[payPlayerIndex]?.gold">Pay</v-btn>
           <v-btn color="error" @click="closePayModal">Cancel</v-btn>
         </v-card-actions>
       </v-card>
@@ -323,20 +197,8 @@
             <strong>{{ players[sellPlayerIndex]?.name }}'s Gold:</strong>
             <span>{{ players[sellPlayerIndex]?.gold }}</span>
           </p>
-          <v-slider
-            v-model="sellQuantity"
-            :max="maxSellQuantity"
-            label="Quantity to Sell"
-            thumb-label="always"
-            step="1"
-          ></v-slider>
-          <v-text-field
-            v-model.number="sellAmount"
-            label="Total Sell Value"
-            type="number"
-            :value="calculateSellAmount()"
-            readonly
-          />
+          <v-slider v-model="sellQuantity" :max="maxSellQuantity" label="Quantity to Sell" thumb-label="always" step="1"></v-slider>
+          <v-text-field v-model.number="sellAmount" label="Total Sell Value" type="number" :value="calculateSellAmount()" readonly />
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" @click="applySell">Sell</v-btn>
@@ -458,9 +320,7 @@ const createItem = () => {
 
 const addItem = () => {
   if (selectedPredefinedItem.value) {
-    const predefinedItem = props.items.find(
-      item => item.id === selectedPredefinedItem.value
-    )
+    const predefinedItem = props.items.find(item => item.id === selectedPredefinedItem.value)
     newItem.value = { ...predefinedItem, quantity: newItem.value.quantity }
   }
   addItemToInventory()
@@ -561,10 +421,7 @@ const useItem = (playerIndex, itemIndex) => {
     for (let i = 1; i <= 5; i++) {
       setTimeout(() => {
         if (foodHealingTracker.value[player.name] > 0) {
-          const healingAmount = Math.min(
-            Number(item.stats),
-            foodHealingTracker.value[player.name]
-          )
+          const healingAmount = Math.min(Number(item.stats), foodHealingTracker.value[player.name])
           player.hp = Math.min(player.hp + healingAmount, player.maxHP)
           foodHealingTracker.value[player.name] -= healingAmount
           emit('players-updated', players.value)
@@ -583,20 +440,14 @@ const deleteItem = (playerIndex, itemIndex) => {
 
   // Unselect the item if it's selected
   if (item.selected) {
-    if (
-      item.type === 'weapon' &&
-      players.value[playerIndex].weapon.id === item.id
-    ) {
+    if (item.type === 'weapon' && players.value[playerIndex].weapon.id === item.id) {
       players.value[playerIndex].weapon = {
         id: null,
         name: '',
         stats: 0,
         type: 'weapon'
       }
-    } else if (
-      item.type === 'armor' &&
-      players.value[playerIndex].armor.id === item.id
-    ) {
+    } else if (item.type === 'armor' && players.value[playerIndex].armor.id === item.id) {
       players.value[playerIndex].armor = {
         id: null,
         name: '',
@@ -626,9 +477,7 @@ const applyRest = () => {
   player.hp = Math.min(player.hp + restHours.value * 3, player.maxHP)
   addNotification({
     title: 'Rest',
-    message: `${player.name} rested for ${
-      restHours.value
-    } hours and recovered ${restHours.value * 3} HP`,
+    message: `${player.name} rested for ${restHours.value} hours and recovered ${restHours.value * 3} HP`,
     color: 'green'
   })
   isRestModalOpen.value = false
@@ -731,7 +580,7 @@ const getItemIcon = type => {
     case 'healing':
       return 'mdi-heart-plus'
     case 'weapon':
-      return 'mdi-sword'
+      return 'mdi-sword-cross'
     case 'armor':
       return 'mdi-shield'
     case 'food':
