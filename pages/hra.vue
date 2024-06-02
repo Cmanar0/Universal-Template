@@ -16,6 +16,8 @@
             :enemy-types="enemyTypes"
             :weapons="weapons"
             :armors="armors"
+            :healing-items="healingItems"
+            :other-items="otherItems"
             :battle-log="battleLog"
             @update-battle-log="updateBattleLog"
             @participant-defeated="handleParticipantDefeated"

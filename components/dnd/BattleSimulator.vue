@@ -149,9 +149,11 @@ import { addNotification } from '../../stores/notificationStore'
 const props = defineProps({
   players: Array,
   enemies: Array,
-  enemyTypes: Array, // New prop to include all enemy types
+  enemyTypes: Array,
   weapons: Array,
-  armors: Array
+  armors: Array,
+  healingItems: Array,
+  otherItems: Array
 })
 
 const emit = defineEmits(['participant-defeated']) // New emit for defeated participant
@@ -221,11 +223,41 @@ const addToBattle = () => {
       newParticipant.hp = Math.round(
         newParticipant.maxHP * (Math.random() * 0.5 + 0.5)
       )
+
+      // Add random items to inventory
+      newParticipant.inventory = newParticipant.inventory || []
+
+      // Add healing items
+      if (Math.floor(Math.random() * 10) + 1 > 8) {
+        const healingItem =
+          props.healingItems[
+            Math.floor(Math.random() * props.healingItems.length)
+          ]
+        newParticipant.inventory.push(healingItem)
+        console.log(
+          `${newParticipant.name} received healing item: ${healingItem.name}`
+        )
+      }
+
+      // Add other items (attempt twice)
+      for (let i = 0; i < 3; i++) {
+        if (Math.floor(Math.random() * 10) + 1 > 7) {
+          const otherItem =
+            props.otherItems[
+              Math.floor(Math.random() * props.otherItems.length)
+            ]
+          newParticipant.inventory.push(otherItem)
+          console.log(
+            `${newParticipant.name} received other item: ${otherItem.name}`
+          )
+        }
+      }
     }
 
     battleParticipants.value.push(newParticipant)
     selectedParticipant.value = null
     search.value = ''
+    console.log(newParticipant) // Log the participant to see added items
   }
 }
 
