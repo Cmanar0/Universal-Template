@@ -176,7 +176,7 @@
                 </button>
                 <button
                   class="inline-flex items-center justify-center h-6 w-6 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 bg-yellow-500"
-                  @click="openSellModal(index, iIndex)"
+                  @click="sellItem(index, iIndex)"
                 >
                   <span class="sr-only">Sell</span>
                   <v-icon class="text-white">mdi-cash</v-icon>
@@ -280,26 +280,24 @@
             <strong>{{ players[sellPlayerIndex]?.name }}'s Gold:</strong>
             <span>{{ players[sellPlayerIndex]?.gold }}</span>
           </p>
-          <div v-if="sellItemQuantity.value === 1">
-            <p>
-              Do you want to sell {{ sellItem.value.name }} for
-              {{ sellItem.value.value }} gold?
-            </p>
-          </div>
-          <div v-else>
-            <v-slider
-              v-model="sellAmount"
-              :min="1"
-              :max="sellItemQuantity.value"
-              step="1"
-              label="Quantity to sell"
-              thumb-label="always"
-            />
-          </div>
+          <v-slider
+            v-model="sellQuantity"
+            :max="maxSellQuantity"
+            label="Quantity to Sell"
+            thumb-label="always"
+            step="1"
+          ></v-slider>
+          <v-text-field
+            v-model.number="sellAmount"
+            label="Total Sell Value"
+            type="number"
+            :value="calculateSellAmount()"
+            readonly
+          />
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" @click="confirmSell">Sell</v-btn>
-          <v-btn color="error" @click="isSellModalOpen = false">Cancel</v-btn>
+          <v-btn color="primary" @click="applySell">Sell</v-btn>
+          <v-btn color="error" @click="closeSellModal">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -329,7 +327,9 @@ const isPayModalOpen = ref(false)
 const isSellModalOpen = ref(false)
 const restHours = ref(1)
 const payAmount = ref(10)
-const sellAmount = ref(1)
+const sellAmount = ref(0)
+const sellQuantity = ref(1)
+const maxSellQuantity = ref(1)
 const editIndex = ref(null)
 const newItem = ref({ name: '', type: 'other', stats: 0, quantity: 1 })
 const selectedPredefinedItem = ref(null)
@@ -338,9 +338,6 @@ const restPlayerIndex = ref(null)
 const payPlayerIndex = ref(null)
 const sellPlayerIndex = ref(null)
 const sellItemIndex = ref(null)
-const sellItemQuantity = ref(1)
-const sellItem = ref(null)
-const foodHealingTracker = ref({})
 
 const players = ref([...props.players])
 
@@ -612,40 +609,60 @@ const closePayModal = () => {
   payAmount.value = 10 // Reset the pay amount
 }
 
-const openSellModal = (playerIndex, itemIndex) => {
-  sellPlayerIndex.value = playerIndex
-  sellItemIndex.value = itemIndex
-  sellItem.value = players.value[playerIndex].inventory[itemIndex]
-  sellItemQuantity.value = sellItem.value.quantity
-  isSellModalOpen.value = true
+const sellItem = (playerIndex, itemIndex) => {
+  const item = players.value[playerIndex].inventory[itemIndex]
+  if (item.quantity === 1) {
+    players.value[playerIndex].gold += item.value
+    players.value[playerIndex].inventory.splice(itemIndex, 1)
+    addNotification({
+      title: 'Item Sold',
+      message: `Sold ${item.name} for ${item.value} gold`,
+      color: 'yellow'
+    })
+    emit('players-updated', players.value)
+    saveToLocalStorage()
+  } else {
+    sellPlayerIndex.value = playerIndex
+    sellItemIndex.value = itemIndex
+    sellQuantity.value = 1
+    maxSellQuantity.value = item.quantity
+    sellAmount.value = item.value
+    isSellModalOpen.value = true
+  }
 }
 
-const confirmSell = () => {
+const applySell = () => {
   const player = players.value[sellPlayerIndex.value]
   const item = player.inventory[sellItemIndex.value]
+  const totalSellValue = sellQuantity.value * item.value
 
-  if (sellItemQuantity.value === 1) {
-    player.gold += item.value
+  player.gold += totalSellValue
+  item.quantity -= sellQuantity.value
+  if (item.quantity <= 0) {
     player.inventory.splice(sellItemIndex.value, 1)
-  } else {
-    player.gold += item.value * sellAmount.value
-    item.quantity -= sellAmount.value
   }
 
   addNotification({
     title: 'Item Sold',
-    message: `Sold ${item.name} for ${item.value * sellAmount.value} gold`,
+    message: `Sold ${sellQuantity.value} x ${item.name} for ${totalSellValue} gold`,
     color: 'yellow'
   })
+
   isSellModalOpen.value = false
-  sellAmount.value = 1 // Reset the sell amount
   emit('players-updated', players.value)
   saveToLocalStorage()
 }
 
 const closeSellModal = () => {
   isSellModalOpen.value = false
-  sellAmount.value = 1 // Reset the sell amount
+  sellQuantity.value = 1
+  sellAmount.value = 0
+}
+
+const calculateSellAmount = () => {
+  const player = players.value[sellPlayerIndex.value]
+  const item = player.inventory[sellItemIndex.value]
+  return sellQuantity.value * item.value
 }
 
 const getItemIcon = type => {
@@ -677,6 +694,8 @@ const getItemClass = type => {
       return 'bg-gray-500 text-white'
   }
 }
+
+const foodHealingTracker = ref({})
 
 const foodHealingRemaining = player => {
   return foodHealingTracker.value[player.name] || 0
