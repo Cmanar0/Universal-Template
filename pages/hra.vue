@@ -4,8 +4,7 @@
       <v-row class="mb-32">
         <v-col cols="12" md="6">
           <player-manager
-            :weapons="weapons"
-            :armors="armors"
+            :items="allItems"
             :players="players"
             @players-updated="updatePlayers"
           />
@@ -19,6 +18,7 @@
             :armors="armors"
             :battle-log="battleLog"
             @update-battle-log="updateBattleLog"
+            @participant-defeated="handleParticipantDefeated"
           />
         </v-col>
       </v-row>
@@ -28,21 +28,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import PlayerManager from '../components/dnd/PlayerManager.vue'
 import BattleSimulator from '../components/dnd/BattleSimulator.vue'
 import Notification from '../components/reusable/Notification.vue'
 
 const weapons = ref([
-  { id: 1, name: 'Prak', stats: 6, type: 'weapon', level: 1 },
-  { id: 2, name: 'Stříbrná dýka', stats: 8, type: 'weapon', level: 1 },
-  { id: 3, name: 'Zlatá dýka', stats: 8, type: 'weapon', level: 2 }
+  { id: 'W1', name: 'Prak', stats: 6, type: 'weapon', level: 1 },
+  { id: 'W2', name: 'Stříbrná dýka', stats: 8, type: 'weapon', level: 1 },
+  { id: 'W3', name: 'Zlatá dýka', stats: 10, type: 'weapon', level: 2 },
+  { id: 'W4', name: 'Long Sword', stats: 12, type: 'weapon', level: 3 },
+  { id: 'W5', name: 'Battle Axe', stats: 15, type: 'weapon', level: 3 }
 ])
 
 const armors = ref([
-  { id: 1, name: 'Mystické roucho', stats: 5, type: 'armor', level: 1 },
-  { id: 2, name: 'Ledové roucho', stats: 6, type: 'armor', level: 1 },
-  { id: 3, name: 'Kovové roucho', stats: 6, type: 'armor', level: 2 }
+  { id: 'A1', name: 'Mystické roucho', stats: 5, type: 'armor', level: 1 },
+  { id: 'A2', name: 'Ledové roucho', stats: 6, type: 'armor', level: 1 },
+  { id: 'A3', name: 'Kovové roucho', stats: 8, type: 'armor', level: 2 },
+  { id: 'A4', name: 'Chainmail', stats: 10, type: 'armor', level: 3 },
+  { id: 'A5', name: 'Plate Armor', stats: 12, type: 'armor', level: 3 }
+])
+
+const healingItems = ref([
+  { id: 'H1', name: 'Minor Healing Potion', stats: 10, type: 'healing' },
+  { id: 'H2', name: 'Major Healing Potion', stats: 20, type: 'healing' },
+  { id: 'H3', name: 'Elixir of Life', stats: 50, type: 'healing' }
+])
+
+const otherItems = ref([
+  { id: 'O1', name: 'Gold Coin', stats: 1, type: 'other', value: 10 },
+  { id: 'O2', name: 'Silver Coin', stats: 1, type: 'other', value: 5 },
+  { id: 'O3', name: 'Ancient Relic', stats: 0, type: 'other', value: 100 }
 ])
 
 const players = ref([
@@ -53,10 +69,7 @@ const players = ref([
     gold: 100,
     weapon: {},
     armor: {},
-    inventory: [
-      { id: 1, name: 'Prak', stats: 6, type: 'weapon' },
-      { id: 1, name: 'Mystické roucho', stats: 5, type: 'armor' }
-    ]
+    inventory: []
   },
   {
     name: 'Player 2',
@@ -65,10 +78,7 @@ const players = ref([
     gold: 150,
     weapon: {},
     armor: {},
-    inventory: [
-      { id: 2, name: 'Stříbrná dýka', stats: 8, type: 'weapon' },
-      { id: 2, name: 'Ledové roucho', stats: 6, type: 'armor' }
-    ]
+    inventory: []
   }
 ])
 
@@ -78,9 +88,11 @@ const enemies = ref([
     hp: 150,
     maxHP: 150,
     gold: 0,
-    weapon: { id: 3, name: 'Magical Staff', stats: 30, type: 'weapon' },
-    armor: { id: 3, name: 'Wizard cloak Armor', stats: 25, type: 'armor' },
-    inventory: []
+    weapon: { id: 'W6', name: 'Magical Staff', stats: 30, type: 'weapon' },
+    armor: { id: 'A6', name: 'Wizard cloak Armor', stats: 25, type: 'armor' },
+    inventory: [
+      { id: 'O3', name: 'Ancient Relic', stats: 0, type: 'other', value: 100 }
+    ]
   }
 ])
 
@@ -103,13 +115,55 @@ const enemyTypes = ref([
 
 const battleLog = ref([])
 
+const allItems = computed(() => [
+  ...weapons.value,
+  ...armors.value,
+  ...healingItems.value,
+  ...otherItems.value
+])
+
 const updatePlayers = newPlayers => {
   players.value = newPlayers
+  savePlayersToLocalStorage()
 }
 
 const updateBattleLog = newLogs => {
   battleLog.value = newLogs
 }
+
+const savePlayersToLocalStorage = () => {
+  localStorage.setItem('players', JSON.stringify(players.value))
+}
+
+const handleParticipantDefeated = ({ attacker, defender }) => {
+  const player = players.value.find(p => p.name === attacker.name)
+  if (player) {
+    if (defender.weapon.name) {
+      player.inventory.push(defender.weapon)
+    }
+    if (defender.armor.name) {
+      player.inventory.push(defender.armor)
+    }
+    defender.inventory.forEach(item => {
+      const existingItem = player.inventory.find(
+        invItem => invItem.id === item.id
+      )
+      if (existingItem) {
+        existingItem.quantity = (existingItem.quantity || 1) + 1
+      } else {
+        player.inventory.push({ ...item, quantity: 1 })
+      }
+    })
+    updatePlayers([...players.value]) // Trigger update
+  }
+}
+
+onMounted(() => {
+  const storedPlayers = localStorage.getItem('players')
+  if (storedPlayers) {
+    players.value = JSON.parse(storedPlayers)
+  }
+})
 </script>
 
 <style>
