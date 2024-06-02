@@ -161,6 +161,16 @@
       <v-card>
         <v-card-title>Add Item</v-card-title>
         <v-card-text>
+          <v-select
+            v-model="selectedPredefinedItem"
+            :items="items"
+            item-title="name"
+            item-value="id"
+            label="Select Predefined Item"
+            dense
+            clearable
+            outlined
+          ></v-select>
           <v-text-field v-model="newItem.name" label="Item Name" />
           <v-radio-group v-model="newItem.type" label="Type">
             <v-radio label="Healing" value="healing" />
@@ -261,8 +271,7 @@ import { ref, watch, onMounted } from 'vue'
 import { addNotification } from '../stores/notificationStore'
 
 const props = defineProps({
-  weapons: Array,
-  armors: Array,
+  items: Array, // Use the combined items array
   players: {
     type: Array,
     required: true,
@@ -281,6 +290,7 @@ const payAmount = ref(10)
 const sellAmount = ref(10)
 const editIndex = ref(null)
 const newItem = ref({ name: '', type: 'other', stats: 0, quantity: 1 })
+const selectedPredefinedItem = ref(null) // Add a ref for the selected predefined item
 const modalPlayerIndex = ref(null)
 const restPlayerIndex = ref(null)
 const payPlayerIndex = ref(null)
@@ -328,6 +338,7 @@ const openModal = index => {
   console.log(`Opening modal for player at index: ${index}`)
   modalPlayerIndex.value = index
   newItem.value = { name: '', type: 'other', stats: 0, quantity: 1 }
+  selectedPredefinedItem.value = null
   isModalOpen.value = true
 }
 
@@ -341,16 +352,56 @@ const addItem = () => {
     if (!players.value[modalPlayerIndex.value].inventory) {
       players.value[modalPlayerIndex.value].inventory = []
     }
-    players.value[modalPlayerIndex.value].inventory.push({
-      ...newItem.value,
-      selected: false
-    })
+    const existingItem = players.value[modalPlayerIndex.value].inventory.find(
+      item => item.id === newItem.value.id
+    )
+    if (existingItem) {
+      existingItem.quantity += newItem.value.quantity
+    } else {
+      if (selectedPredefinedItem.value && !hasItemChanged()) {
+        // Add predefined item without new ID
+        players.value[modalPlayerIndex.value].inventory.push({
+          ...newItem.value
+        })
+      } else {
+        // Add new item with new ID
+        players.value[modalPlayerIndex.value].inventory.push({
+          ...newItem.value,
+          id: generateNewId(newItem.value.type)
+        })
+      }
+    }
     isModalOpen.value = false
     emit('players-updated', players.value)
     saveToLocalStorage()
     console.log(`Updated players: ${JSON.stringify(players.value)}`)
   }
 }
+
+const hasItemChanged = () => {
+  const selectedItem = props.items.find(
+    item => item.id === selectedPredefinedItem.value
+  )
+  return (
+    selectedItem.name !== newItem.value.name ||
+    selectedItem.type !== newItem.value.type ||
+    selectedItem.stats !== newItem.value.stats
+  )
+}
+
+const generateNewId = type => {
+  const prefix = type.charAt(0).toUpperCase()
+  return `${prefix}-${Math.random().toString(36).substr(2, 9)}`
+}
+
+watch(selectedPredefinedItem, newVal => {
+  if (newVal) {
+    const selectedItem = props.items.find(item => item.id === newVal)
+    newItem.value = { ...selectedItem, quantity: 1 }
+  } else {
+    newItem.value = { name: '', type: 'other', stats: 0, quantity: 1 }
+  }
+})
 
 const selectItem = (playerIndex, itemIndex) => {
   const player = players.value[playerIndex]
