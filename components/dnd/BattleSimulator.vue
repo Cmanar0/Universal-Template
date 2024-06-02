@@ -273,8 +273,10 @@ const simulateAttack = () => {
 
   defender.hp -= damage
 
+  const currentTime = new Date().toLocaleTimeString()
+
   battleLog.value.unshift(
-    `<span class="text-blue-500">${attacker.name} used input: ${diceRoll}</span> + 
+    `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-blue-500">${attacker.name} used input: ${diceRoll}</span> + 
     <span class="text-red-500">${attacker.weapon.name} attack: ${attacker.weapon.stats}</span> = 
     <span class="text-green-500">Total attack: ${totalAttack}</span> - 
     <span class="text-orange-500">${defender.name}'s ${defender.armor.name} defense: ${defender.armor.stats}</span> = 
@@ -289,7 +291,7 @@ const simulateAttack = () => {
 
   if (defender.hp <= 0) {
     battleLog.value.unshift(
-      `<span class="text-red-600">${defender.name} has been defeated!</span>`
+      `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-red-600">${defender.name} has been defeated!</span>`
     )
     addNotification({
       title: 'Defeat',
@@ -301,13 +303,31 @@ const simulateAttack = () => {
       const goldGained = Math.floor(Math.random() * 50) + 10
       attacker.gold += goldGained
       battleLog.value.unshift(
-        `<span class="text-yellow-500">${attacker.name} gained ${goldGained} gold!</span>`
+        `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-yellow-500">${attacker.name} gained ${goldGained} gold!</span>`
       )
       addNotification({
         title: 'Gold Gained',
         message: `${attacker.name} gained ${goldGained} gold!`,
         color: 'yellow'
       })
+
+      if (defender.weapon) {
+        battleLog.value.unshift(
+          `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-green-500">${attacker.name} received ${defender.weapon.name}!</span>`
+        )
+      }
+      if (defender.armor) {
+        battleLog.value.unshift(
+          `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-green-500">${attacker.name} received ${defender.armor.name}!</span>`
+        )
+      }
+      if (defender.inventory && defender.inventory.length > 0) {
+        defender.inventory.forEach(item => {
+          battleLog.value.unshift(
+            `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-green-500">${attacker.name} received ${item.name}!</span>`
+          )
+        })
+      }
     }
 
     // Emit event to transfer items and remove participant
@@ -315,9 +335,6 @@ const simulateAttack = () => {
 
     // Remove the defeated defender from the battle participants
     const removed = battleParticipants.value.splice(defenderIndex.value, 1)
-    battleLog.value.unshift(
-      `<span class="text-red-600">${removed[0].name} has been removed from the battle!</span>`
-    )
 
     // Reset indices if necessary
     if (defenderIndex.value === attackerIndex.value) {
@@ -339,6 +356,7 @@ const simulateAttack = () => {
   // Clear the input field
   inputNumber.value = null
 }
+
 watch(
   () => props.players,
   newPlayers => {
