@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <EditUserModal :user="form" :isVisible="isEditModalOpen" @close="closeModal" @update="updateUser" />
+    <EditUserModal :user="selectedUser" @close="closeModal" @update="updateUser" />
 
     <!-- Confirmation Modals -->
     <ModalTwoBtns
@@ -117,16 +117,9 @@ interface User {
 const users = ref<User[]>([])
 
 const dropdownOpen = ref<string | null>(null)
-const isEditModalOpen = ref(false)
 const isDeactivateModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
-const form = reactive({
-  id: '',
-  firstName: '',
-  lastName: '',
-  email: '',
-  password: ''
-})
+const selectedUser = ref<User | null>(null)
 const deactivateUser = reactive<User>({
   id: ''
 })
@@ -145,9 +138,7 @@ const fetchUsers = async () => {
 }
 
 const openEditModal = (user: User) => {
-  Object.assign(form, user)
-  form.password = ''
-  isEditModalOpen.value = true
+  selectedUser.value = user
   dropdownOpen.value = null
 }
 
@@ -164,7 +155,6 @@ const openDeleteModal = (user: User) => {
 }
 
 const closeModal = () => {
-  isEditModalOpen.value = false
   isDeactivateModalOpen.value = false
   isDeleteModalOpen.value = false
 }
@@ -172,9 +162,7 @@ const closeModal = () => {
 const updateUser = async (updatedUser: User) => {
   console.log('updatedUser :>> ', updatedUser)
   try {
-    await apiService.patch(`/api/users/${updatedUser.id}`, updatedUser)
-    await fetchUsers()
-    closeModal()
+    const response = await apiService.patch(`/api/users/${updatedUser.id}`, updatedUser)
     addNotification({
       title: 'Success',
       message: 'User updated successfully',
@@ -184,17 +172,17 @@ const updateUser = async (updatedUser: User) => {
     console.error('Failed to update user:', error)
     addNotification({
       title: 'Error',
-      message: 'Failed to update user',
+      message: error.response?.data?.message || 'Failed to update user',
       color: 'red'
     })
   }
+  await fetchUsers()
+  closeModal()
 }
 
 const confirmDeactivate = async () => {
   try {
-    await apiService.patch(`/api/users/${deactivateUser.id}`, { isActive: !deactivateUser.isActive })
-    await fetchUsers()
-    closeModal()
+    const response = await apiService.patch(`/api/users/${deactivateUser.id}`, { isActive: !deactivateUser.isActive })
     addNotification({
       title: 'Success',
       message: `User ${deactivateUser.isActive ? 'deactivated' : 'activated'} successfully`,
@@ -204,17 +192,17 @@ const confirmDeactivate = async () => {
     console.error(`Failed to ${deactivateUser.isActive ? 'deactivate' : 'activate'} user:`, error)
     addNotification({
       title: 'Error',
-      message: `Failed to ${deactivateUser.isActive ? 'deactivate' : 'activate'} user`,
+      message: error.response?.data?.message || `Failed to ${deactivateUser.isActive ? 'deactivate' : 'activate'} user`,
       color: 'red'
     })
   }
+  await fetchUsers()
+  closeModal()
 }
 
 const confirmDelete = async () => {
   try {
-    await apiService.delete(`/api/users/${deleteUser.id}`)
-    await fetchUsers()
-    closeModal()
+    const response = await apiService.delete(`/api/users/${deleteUser.id}`)
     addNotification({
       title: 'Success',
       message: 'User deleted successfully',
@@ -224,10 +212,12 @@ const confirmDelete = async () => {
     console.error('Failed to delete user:', error)
     addNotification({
       title: 'Error',
-      message: 'Failed to delete user',
+      message: error.response?.data?.message || 'Failed to delete user',
       color: 'red'
     })
   }
+  await fetchUsers()
+  closeModal()
 }
 
 onMounted(() => {

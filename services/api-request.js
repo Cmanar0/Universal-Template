@@ -55,7 +55,7 @@ api.interceptors.response.use(
       btnText: 'Ok'
     })
 
-    throw error
+    return Promise.reject(error) // Ensure the error is returned to the calling function
   }
 )
 
@@ -105,30 +105,18 @@ async function processRequest(method, url, data = {}, params = {}, headers = {})
       errorMessage = error.response.data.message || errorMessage
     }
 
-    if (error.response && error.response.status === 401) {
-      return {
-        success: false,
-        status: 401,
-        message: 'Unauthorized access. Redirecting to login.',
-        data: []
-      }
-    }
+    addError({
+      header: 'Error',
+      content: errorMessage,
+      btnText: 'Ok'
+    })
 
-    if (error.response && error.response.status >= 500) {
-      return {
-        success: false,
-        status: error.response.status,
-        message: 'Server error. Please try again later.',
-        data: []
-      }
-    }
-
-    return {
+    return Promise.reject({
       success: false,
       status: error.response ? error.response.status : 500,
       message: errorMessage,
-      data: []
-    }
+      data: error.response ? error.response.data : {}
+    })
   }
 }
 
