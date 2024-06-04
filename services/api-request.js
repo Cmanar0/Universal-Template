@@ -1,16 +1,13 @@
-// services/api-request.ts
-
 import axios from 'axios'
 import Cookies from 'js-cookie'
-import { addError } from '../stores/errorsStore' // Update the path as necessary
+import { addError } from '../stores/errorsStore'
 import mittBus from '../utils/mitt.js'
 
-// Get the base URL from the runtime configuration
-const baseURL = process.env.baseApiUrl || ''
-
+// Get the base URL from the environment variables
+const BASE_API_URL = import.meta.env.BASE_API_URL || 'https://next-backend-six.vercel.app'
 // Create an Axios instance
 const api = axios.create({
-  baseURL, // Set the base URL here
+  baseURL: BASE_API_URL,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -20,100 +17,140 @@ const api = axios.create({
 api.interceptors.request.use(
   config => {
     const token = Cookies.get('bv_jwt')
-    console.log('token :>> ', token)
     if (token) {
-      config.headers['x-auth-token'] = token // Assuming the token should be sent as 'x-auth-token'
+      config.headers['x-auth-token'] = token
     }
     return config
   },
   error => Promise.reject(error)
 )
+
 api.interceptors.response.use(
   response => response,
   error => {
-    mittBus.emit('loader-off') // Hide the spinner on error
+    mittBus.emit('loader-off')
     let errorMessage = 'An unknown error occurred. Please try again.'
 
     if (error.response) {
-      // Server responded with a status code out of the range of 2xx
       const { status, data } = error.response
       if (status >= 300 && status < 400) {
         errorMessage = 'Redirection error. Please try again.'
       } else if (status >= 400 && status < 500) {
-        errorMessage =
-          data.message ||
-          'Client error. Please check your request and try again.'
+        errorMessage = data.message || 'Client error. Please check your request and try again.'
       } else if (status >= 500) {
         errorMessage = 'Server error. Please try again later.'
       } else {
         errorMessage = `Unexpected status code: ${status}`
       }
     } else if (error.request) {
-      // Request was made but no response was received
-      errorMessage =
-        'No response received from the server. Please check your internet connection.'
+      errorMessage = 'No response received from the server. Please check your internet connection.'
     } else {
-      // Something happened in setting up the request
       errorMessage = error.message
     }
 
-    // Log the error
     console.error('API request failed:', errorMessage)
-
-    // Add the error to the global store
     addError({
       header: 'Error',
       content: errorMessage,
       btnText: 'Ok'
     })
 
-    // Throw the error to propagate it to the calling function
     throw error
   }
 )
 
-// API functions
-export const apiService = {
-  async request(
-    method,
-    url,
-    data = {},
-    params = {},
-    headers = {},
-    baseURL = ''
-  ) {
-    mittBus.emit('loader-on') // Show the spinner before making the request
-    try {
-      const response = await api({
-        method,
-        url,
-        data,
-        params,
-        headers,
-        baseURL
-      })
-      mittBus.emit('loader-off') // Hide the spinner after receiving the response
-      return response.data
-    } catch (error) {
-      mittBus.emit('loader-off') // Hide the spinner in case of an error
-      throw error // This will be caught by the calling function
+async function processRequest(method, url, data = {}, params = {}, headers = {}) {
+  try {
+    let response
+    const config = {
+      url,
+      method,
+      data,
+      params,
+      headers
     }
+
+    mittBus.emit('loader-on')
+
+    switch (method) {
+      case 'get':
+        response = await api.get(url, { params, headers })
+        break
+      case 'post':
+        response = await api.post(url, data, { params, headers })
+        break
+      case 'patch':
+        response = await api.patch(url, data, { params, headers })
+        break
+      case 'delete':
+        response = await api.delete(url, { params, headers })
+        break
+      default:
+        throw new Error(`Unsupported method: ${method}`)
+    }
+
+    mittBus.emit('loader-off')
+
+    return {
+      success: true,
+      status: response.status,
+      data: response.data,
+      headers: response.headers
+    }
+  } catch (error) {
+    mittBus.emit('loader-off')
+    let errorMessage = 'An error occurred while processing the request.'
+
+    if (error.response) {
+      errorMessage = error.response.data.message || errorMessage
+    }
+
+    if (error.response && error.response.status === 401) {
+      return {
+        success: false,
+        status: 401,
+        message: 'Unauthorized access. Redirecting to login.',
+        data: []
+      }
+    }
+
+    if (error.response && error.response.status >= 500) {
+      return {
+        success: false,
+        status: error.response.status,
+        message: 'Server error. Please try again later.',
+        data: []
+      }
+    }
+
+    return {
+      success: false,
+      status: error.response ? error.response.status : 500,
+      message: errorMessage,
+      data: []
+    }
+  }
+}
+
+export const apiService = {
+  async make(method, url, data = {}, params = {}, headers = {}) {
+    return await processRequest(method, url, data, params, headers)
   },
 
-  async get(url, params = {}, headers = {}, baseURL = '') {
-    return this.request('get', url, {}, params, headers, baseURL)
+  async get(url, params = {}, headers = {}) {
+    return this.make('get', url, {}, params, headers)
   },
 
-  async post(url, data, params = {}, headers = {}, baseURL = '') {
-    return this.request('post', url, data, params, headers, baseURL)
+  async post(url, data, params = {}, headers = {}) {
+    return this.make('post', url, data, params, headers)
   },
 
-  async patch(url, data, params = {}, headers = {}, baseURL = '') {
-    return this.request('patch', url, data, params, headers, baseURL)
+  async patch(url, data, params = {}, headers = {}) {
+    return this.make('patch', url, data, params, headers)
   },
 
-  async delete(url, params = {}, headers = {}, baseURL = '') {
-    return this.request('delete', url, {}, params, headers, baseURL)
+  async delete(url, params = {}, headers = {}) {
+    return this.make('delete', url, {}, params, headers)
   }
 }
 

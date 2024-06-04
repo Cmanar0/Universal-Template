@@ -18,37 +18,15 @@
           ></v-select>
         </v-col>
         <v-col cols="3">
-          <v-btn
-            color="primary"
-            @click="addToBattle"
-            :disabled="!selectedParticipant"
-            >Add to Battle</v-btn
-          >
+          <v-btn color="primary" @click="addToBattle" :disabled="!selectedParticipant">Add to Battle</v-btn>
         </v-col>
       </v-row>
       <v-row class="align-center my-4">
         <v-col cols="3">
-          <v-text-field
-            v-model.number="inputNumber"
-            label="Dice Roll"
-            type="number"
-            :min="1"
-            :max="6"
-            :disabled="attackerIndex === null || defenderIndex === null"
-          />
+          <v-text-field v-model.number="inputNumber" label="Dice Roll" type="number" :min="1" :max="6" :disabled="attackerIndex === null || defenderIndex === null" />
         </v-col>
         <v-col cols="9">
-          <v-btn
-            color="red darken-3"
-            class="attack-button"
-            @click="simulateAttack"
-            :disabled="
-              attackerIndex === null ||
-              defenderIndex === null ||
-              inputNumber === null
-            "
-            block
-          >
+          <v-btn color="red darken-3" class="attack-button" @click="simulateAttack" :disabled="attackerIndex === null || defenderIndex === null || inputNumber === null" block>
             ATTACK
           </v-btn>
         </v-col>
@@ -57,37 +35,18 @@
     <div class="mt-4">
       <h3 class="text-xl text-center mb-4">Participants in Battle</h3>
       <v-row>
-        <v-col
-          v-for="(participant, index) in battleParticipants"
-          :key="index"
-          cols="12"
-          md="6"
-        >
+        <v-col v-for="(participant, index) in battleParticipants" :key="index" cols="12" md="6">
           <v-card class="mb-4 relative">
-            <v-btn
-              icon
-              small
-              class="remove-btn"
-              @click="removeParticipant(index)"
-            >
+            <v-btn icon small class="remove-btn" @click="removeParticipant(index)">
               <v-icon color="red">mdi-close</v-icon>
             </v-btn>
             <v-card-title>
               {{ participant.name }}
-              <span v-if="participant.level">
-                (Level: {{ participant.level }})</span
-              >
+              <span v-if="participant.level"> (Level: {{ participant.level }})</span>
             </v-card-title>
             <v-card-text>
-              <p>
-                <strong>HP:</strong> {{ participant.hp }} /
-                {{ participant.maxHP }} ({{
-                  (participant.hp / participant.maxHP) * 100
-                }}%)
-              </p>
-              <div
-                class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2 min-w-80"
-              >
+              <p><strong>HP:</strong> {{ participant.hp }} / {{ participant.maxHP }} ({{ (participant.hp / participant.maxHP) * 100 }}%)</p>
+              <div class="relative w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-2 min-w-80">
                 <div
                   class="absolute top-0 left-0 h-full bg-green-500"
                   :style="{
@@ -97,38 +56,18 @@
               </div>
               <p>
                 <strong>Weapon:</strong>
-                {{ participant.weapon.name }} (Stats:
-                {{ participant.weapon.stats }})
+                {{ participant.weapon.name }} (Stats: {{ participant.weapon.stats }})
               </p>
-              <p>
-                <strong>Armor:</strong> {{ participant.armor.name }} (Stats:
-                {{ participant.armor.stats }})
-              </p>
+              <p><strong>Armor:</strong> {{ participant.armor.name }} (Stats: {{ participant.armor.stats }})</p>
               <v-row class="mt-2">
                 <v-col>
-                  <v-btn
-                    class="attacker-btn"
-                    @click="setAsAttacker(index)"
-                    :class="{ selected: attackerIndex === index }"
-                  >
-                    <img
-                      src="../../assets/sword.png"
-                      alt="Attacker"
-                      class="icon-img"
-                    />
+                  <v-btn class="attacker-btn" @click="setAsAttacker(index)" :class="{ selected: attackerIndex === index }">
+                    <img src="../../assets/sword.png" alt="Attacker" class="icon-img" />
                   </v-btn>
                 </v-col>
                 <v-col>
-                  <v-btn
-                    class="defender-btn"
-                    @click="setAsDefender(index)"
-                    :class="{ selected: defenderIndex === index }"
-                  >
-                    <img
-                      src="../../assets/shield.png"
-                      alt="Defender"
-                      class="icon-img"
-                    />
+                  <v-btn class="defender-btn" @click="setAsDefender(index)" :class="{ selected: defenderIndex === index }">
+                    <img src="../../assets/shield.png" alt="Defender" class="icon-img" />
                   </v-btn>
                 </v-col>
               </v-row>
@@ -184,9 +123,7 @@ const filteredParticipants = computed(() => {
   if (!search.value) {
     return allParticipants.value
   }
-  return allParticipants.value.filter(participant =>
-    participant.name.toLowerCase().includes(search.value.toLowerCase())
-  )
+  return allParticipants.value.filter(participant => participant.name.toLowerCase().includes(search.value.toLowerCase()))
 })
 
 const addToBattle = () => {
@@ -194,76 +131,44 @@ const addToBattle = () => {
     const newParticipant = { ...selectedParticipant.value }
 
     // Only adjust attributes if the participant is an enemy type
-    if (
-      props.enemyTypes.some(enemyType => enemyType.name === newParticipant.name)
-    ) {
-      const enemyType = props.enemyTypes.find(
-        enemyType => enemyType.name === newParticipant.name
-      )
+    if (props.enemyTypes.some(enemyType => enemyType.name === newParticipant.name)) {
+      const enemyType = props.enemyTypes.find(enemyType => enemyType.name === newParticipant.name)
       const level = enemyType.level
 
       // Assign random weapon and armor based on level
-      const availableWeapons = props.weapons.filter(
-        weapon => weapon.level <= level
-      )
+      const availableWeapons = props.weapons.filter(weapon => weapon.level <= level)
       const availableArmors = props.armors.filter(armor => armor.level <= level)
 
       if (availableWeapons.length > 0) {
-        newParticipant.weapon =
-          availableWeapons[Math.floor(Math.random() * availableWeapons.length)]
+        newParticipant.weapon = availableWeapons[Math.floor(Math.random() * availableWeapons.length)]
       }
       if (availableArmors.length > 0) {
-        newParticipant.armor =
-          availableArmors[Math.floor(Math.random() * availableArmors.length)]
+        newParticipant.armor = availableArmors[Math.floor(Math.random() * availableArmors.length)]
       }
 
       // Adjust HP
       const hpAdjustmentFactor = Math.random() * 0.4 + 0.8
-      newParticipant.maxHP = Math.round(
-        newParticipant.maxHP * hpAdjustmentFactor
-      )
-      newParticipant.hp = Math.round(
-        newParticipant.maxHP * (Math.random() * 0.5 + 0.5)
-      )
+      newParticipant.maxHP = Math.round(newParticipant.maxHP * hpAdjustmentFactor)
+      newParticipant.hp = Math.round(newParticipant.maxHP * (Math.random() * 0.5 + 0.5))
 
       // Add random items to inventory
       newParticipant.inventory = newParticipant.inventory || []
 
       // Add healing items of the same or lower level
-      const availableHealingItems = props.healingItems.filter(
-        item => item.level <= level
-      )
-      if (
-        Math.floor(Math.random() * 10) + 1 > 5 &&
-        availableHealingItems.length > 0
-      ) {
-        const healingItem =
-          availableHealingItems[
-            Math.floor(Math.random() * availableHealingItems.length)
-          ]
+      const availableHealingItems = props.healingItems.filter(item => item.level <= level)
+      if (Math.floor(Math.random() * 10) + 1 > 5 && availableHealingItems.length > 0) {
+        const healingItem = availableHealingItems[Math.floor(Math.random() * availableHealingItems.length)]
         newParticipant.inventory.push(healingItem)
-        console.log(
-          `${newParticipant.name} received healing item: ${healingItem.name}`
-        )
+        console.log(`${newParticipant.name} received healing item: ${healingItem.name}`)
       }
 
       // Add other items of the same or lower level (attempt twice)
-      const availableOtherItems = props.otherItems.filter(
-        item => item.level <= level
-      )
+      const availableOtherItems = props.otherItems.filter(item => item.level <= level)
       for (let i = 0; i < 2; i++) {
-        if (
-          Math.floor(Math.random() * 10) + 1 > 5 &&
-          availableOtherItems.length > 0
-        ) {
-          const otherItem =
-            availableOtherItems[
-              Math.floor(Math.random() * availableOtherItems.length)
-            ]
+        if (Math.floor(Math.random() * 10) + 1 > 5 && availableOtherItems.length > 0) {
+          const otherItem = availableOtherItems[Math.floor(Math.random() * availableOtherItems.length)]
           newParticipant.inventory.push(otherItem)
-          console.log(
-            `${newParticipant.name} received other item: ${otherItem.name}`
-          )
+          console.log(`${newParticipant.name} received other item: ${otherItem.name}`)
         }
       }
     }
@@ -277,9 +182,7 @@ const addToBattle = () => {
 
 const removeParticipant = index => {
   const removed = battleParticipants.value.splice(index, 1)
-  battleLog.value.unshift(
-    `<span class="text-red-600">${removed[0].name} has run away from the battle!</span>`
-  )
+  battleLog.value.unshift(`<span class="text-red-600">${removed[0].name} has run away from the battle!</span>`)
   addNotification({
     title: 'Participant Run Away',
     message: `${removed[0].name} has run away from the battle!`,
@@ -302,12 +205,7 @@ const setAsDefender = index => {
 }
 
 const simulateAttack = () => {
-  if (
-    attackerIndex.value === null ||
-    defenderIndex.value === null ||
-    inputNumber.value === null
-  )
-    return
+  if (attackerIndex.value === null || defenderIndex.value === null || inputNumber.value === null) return
 
   const attacker = battleParticipants.value[attackerIndex.value]
   const defender = battleParticipants.value[defenderIndex.value]
@@ -336,9 +234,7 @@ const simulateAttack = () => {
   })
 
   if (defender.hp <= 0) {
-    battleLog.value.unshift(
-      `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-red-600">${defender.name} has been defeated!</span>`
-    )
+    battleLog.value.unshift(`<span class="text-gray-500">[${currentTime}]</span>  <span class="text-red-600">${defender.name} has been defeated!</span>`)
     addNotification({
       title: 'Defeat',
       message: `${defender.name} has been defeated!`,
@@ -346,32 +242,15 @@ const simulateAttack = () => {
     })
 
     if (attacker.name !== defender.name) {
-      const goldGained = Math.floor(Math.random() * 50) + 10
-      attacker.gold += goldGained
-      battleLog.value.unshift(
-        `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-yellow-500">${attacker.name} gained ${goldGained} gold!</span>`
-      )
-      addNotification({
-        title: 'Gold Gained',
-        message: `${attacker.name} gained ${goldGained} gold!`,
-        color: 'yellow'
-      })
-
       if (defender.weapon) {
-        battleLog.value.unshift(
-          `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-green-500">${attacker.name} received ${defender.weapon.name}!</span>`
-        )
+        battleLog.value.unshift(`<span class="text-gray-500">[${currentTime}]</span>  <span class="text-green-500">${attacker.name} received ${defender.weapon.name}!</span>`)
       }
       if (defender.armor) {
-        battleLog.value.unshift(
-          `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-green-500">${attacker.name} received ${defender.armor.name}!</span>`
-        )
+        battleLog.value.unshift(`<span class="text-gray-500">[${currentTime}]</span>  <span class="text-green-500">${attacker.name} received ${defender.armor.name}!</span>`)
       }
       if (defender.inventory && defender.inventory.length > 0) {
         defender.inventory.forEach(item => {
-          battleLog.value.unshift(
-            `<span class="text-gray-500">[${currentTime}]</span>  <span class="text-green-500">${attacker.name} received ${item.name}!</span>`
-          )
+          battleLog.value.unshift(`<span class="text-gray-500">[${currentTime}]</span>  <span class="text-green-500">${attacker.name} received ${item.name}!</span>`)
         })
       }
     }
@@ -407,9 +286,7 @@ watch(
   () => props.players,
   newPlayers => {
     const updatedParticipants = battleParticipants.value.map(participant => {
-      const updatedParticipant = newPlayers.find(
-        player => player.name === participant.name
-      )
+      const updatedParticipant = newPlayers.find(player => player.name === participant.name)
       return updatedParticipant ? updatedParticipant : participant
     })
     battleParticipants.value = updatedParticipants
@@ -418,11 +295,7 @@ watch(
 )
 
 onMounted(() => {
-  if (
-    props.players.length > 0 ||
-    props.enemies.length > 0 ||
-    props.enemyTypes.length > 0
-  ) {
+  if (props.players.length > 0 || props.enemies.length > 0 || props.enemyTypes.length > 0) {
     selectedParticipant.value = allParticipants.value[0]
   }
 })

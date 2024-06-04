@@ -3,11 +3,7 @@ import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  plugins: [
-    '~/plugins/hello.ts',
-    '~/plugins/vue3-apexcharts.js',
-    '~/plugins/vuetify.ts'
-  ],
+  plugins: ['~/plugins/hello.ts', '~/plugins/vue3-apexcharts.js', '~/plugins/vuetify.ts'],
   runtimeConfig: {
     public: {
       baseApiUrl: process.env.BASE_API_URL // Ensure this is available on both client and server

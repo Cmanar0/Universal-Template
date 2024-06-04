@@ -5,54 +5,14 @@
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th
-                scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                #
-              </th>
-              <th
-                scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Name
-              </th>
-              <th
-                scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Email
-              </th>
-              <th
-                scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Lang
-              </th>
-              <th
-                scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Is Active
-              </th>
-              <th
-                scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Registered At
-              </th>
-              <th
-                scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Updated At
-              </th>
-              <th
-                scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Action
-              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lang</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Is Active</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered At</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated At</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -61,9 +21,7 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">
-                      {{ user.firstName }} {{ user.lastName }}
-                    </div>
+                    <div class="text-sm font-medium text-gray-900">{{ user.firstName }} {{ user.lastName }}</div>
                   </div>
                 </div>
               </td>
@@ -90,38 +48,23 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {{ new Date(user.updatedAt).toLocaleString() }}
               </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative"
-              >
-                <img
-                  class="icon cursor-pointer"
-                  @click="toggleDropdown(user.id)"
-                  src="../assets/svg/dots.svg"
-                  alt="dots-for-editing"
-                />
-                <div
-                  v-if="dropdownOpen === user.id"
-                  class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg"
-                >
-                  <a
-                    href="#"
-                    @click.prevent="openEditModal(user)"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >Edit</a
-                  >
-                  <a
-                    href="#"
-                    @click.prevent="openDeactivateModal(user)"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >{{ user.isActive ? 'Deactivate' : 'Activate' }}</a
-                  >
-                  <a
-                    href="#"
-                    @click.prevent="openDeleteModal(user)"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >Delete</a
-                  >
-                </div>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
+                <v-menu>
+                  <template v-slot:activator="{ props }">
+                    <v-btn icon="mdi-dots-vertical" v-bind="props"></v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item @click="openEditModal(user)">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="openDeactivateModal(user)">
+                      <v-list-item-title>{{ user.isActive ? 'Deactivate' : 'Activate' }}</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="openDeleteModal(user)">
+                      <v-list-item-title>Delete</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </td>
             </tr>
           </tbody>
@@ -129,22 +72,13 @@
       </div>
     </div>
 
-    <EditUserModal
-      :user="form"
-      :isVisible="isEditModalOpen"
-      @close="closeModal"
-      @update="updateUser"
-    />
+    <EditUserModal :user="form" :isVisible="isEditModalOpen" @close="closeModal" @update="updateUser" />
 
     <!-- Confirmation Modals -->
     <ModalTwoBtns
       v-if="isDeactivateModalOpen"
-      :header="`Confirm ${
-        deactivateUser.isActive ? 'Deactivation' : 'Activation'
-      }`"
-      :content="`Are you sure you want to ${
-        deactivateUser.isActive ? 'deactivate' : 'activate'
-      } this user?`"
+      :header="`Confirm ${deactivateUser.isActive ? 'Deactivation' : 'Activation'}`"
+      :content="`Are you sure you want to ${deactivateUser.isActive ? 'deactivate' : 'activate'} this user?`"
       btnText="Confirm"
       :btnColor="deactivateUser.isActive ? 'bg-red-500' : 'bg-green-500'"
       @confirm="confirmDeactivate"
@@ -165,7 +99,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import apiService from '../services/api-request' // Update the path as necessary
-// import { User } from '../types/user' // Update the path as necessary
 import EditUserModal from './specific-modals/EditUserModal.vue'
 import ModalTwoBtns from './reusable/ModalTwoBtns.vue'
 import { addNotification } from '../stores/notificationStore' // Import addNotification
@@ -182,7 +115,6 @@ interface User {
 }
 
 const users = ref<User[]>([])
-const baseApiUrl = 'https://next-backend-six.vercel.app/api/' // Get base API URL from environment variables
 
 const dropdownOpen = ref<string | null>(null)
 const isEditModalOpen = ref(false)
@@ -205,16 +137,11 @@ const deleteUser = reactive<User>({
 
 const fetchUsers = async () => {
   try {
-    const response = await apiService.get('/users', {}, {}, baseApiUrl)
-    console.log('fetchUsers response :>> ', response)
-    users.value = response.users
+    const response = await apiService.get('/api/users')
+    users.value = response.data.users
   } catch (error) {
     console.error('Failed to fetch users:', error)
   }
-}
-
-const toggleDropdown = (userId: string) => {
-  dropdownOpen.value = dropdownOpen.value === userId ? null : userId
 }
 
 const openEditModal = (user: User) => {
@@ -243,14 +170,9 @@ const closeModal = () => {
 }
 
 const updateUser = async (updatedUser: User) => {
+  console.log('updatedUser :>> ', updatedUser)
   try {
-    await apiService.patch(
-      `/users/${updatedUser.id}`,
-      updatedUser,
-      {},
-      {},
-      baseApiUrl
-    )
+    await apiService.patch(`/api/users/${updatedUser.id}`, updatedUser)
     await fetchUsers()
     closeModal()
     addNotification({
@@ -270,32 +192,19 @@ const updateUser = async (updatedUser: User) => {
 
 const confirmDeactivate = async () => {
   try {
-    await apiService.patch(
-      `/users/${deactivateUser.id}`,
-      { isActive: !deactivateUser.isActive },
-      {},
-      {},
-      baseApiUrl
-    )
+    await apiService.patch(`/api/users/${deactivateUser.id}`, { isActive: !deactivateUser.isActive })
     await fetchUsers()
     closeModal()
     addNotification({
       title: 'Success',
-      message: `User ${
-        deactivateUser.isActive ? 'deactivated' : 'activated'
-      } successfully`,
+      message: `User ${deactivateUser.isActive ? 'deactivated' : 'activated'} successfully`,
       color: 'green'
     })
   } catch (error) {
-    console.error(
-      `Failed to ${deactivateUser.isActive ? 'deactivate' : 'activate'} user:`,
-      error
-    )
+    console.error(`Failed to ${deactivateUser.isActive ? 'deactivate' : 'activate'} user:`, error)
     addNotification({
       title: 'Error',
-      message: `Failed to ${
-        deactivateUser.isActive ? 'deactivate' : 'activate'
-      } user`,
+      message: `Failed to ${deactivateUser.isActive ? 'deactivate' : 'activate'} user`,
       color: 'red'
     })
   }
@@ -303,7 +212,7 @@ const confirmDeactivate = async () => {
 
 const confirmDelete = async () => {
   try {
-    await apiService.delete(`/users/${deleteUser.id}`, {}, {}, baseApiUrl)
+    await apiService.delete(`/api/users/${deleteUser.id}`)
     await fetchUsers()
     closeModal()
     addNotification({

@@ -102,6 +102,7 @@ const enemies = ref([
 const enemyTypes = ref([
   // Level 1
   { name: 'Goblin', level: 1, maxHP: 50, weapon: {}, armor: {} },
+  { name: 'Farmář', level: 1, maxHP: 20, weapon: {}, armor: {} },
   { name: 'Bandita', level: 1, maxHP: 60, weapon: {}, armor: {} },
   { name: 'Vlk', level: 1, maxHP: 40, weapon: {}, armor: {} },
   { name: 'Kostlivec', level: 1, maxHP: 50, weapon: {}, armor: {} },
@@ -173,8 +174,17 @@ const savePlayersToLocalStorage = () => {
 }
 
 const handleParticipantDefeated = ({ attacker, defender }) => {
+  const currentTime = new Date().toLocaleTimeString()
   const player = players.value.find(p => p.name === attacker.name)
   if (player) {
+    const goldGained = Math.floor(Math.random() * 50) + 10
+    player.gold += goldGained
+    battleLog.value.unshift(`<span class="text-gray-500">[${currentTime}]</span>  <span class="text-yellow-500">${attacker.name} gained ${goldGained} gold!</span>`)
+    addNotification({
+      title: 'Gold Gained',
+      message: `${attacker.name} gained ${goldGained} gold!`,
+      color: 'yellow'
+    })
     // Add defender's weapon to attacker's inventory
     if (defender.weapon && defender.weapon.name) {
       const weaponItem = player.inventory.find(invItem => invItem.id === defender.weapon.id)
