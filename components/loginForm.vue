@@ -1,8 +1,6 @@
 <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div
-      class="w-full max-w-md px-10 py-8 space-y-6 bg-white shadow-lg rounded-xl"
-    >
+    <div class="w-full max-w-md px-10 py-8 space-y-6 bg-white shadow-lg rounded-xl">
       <h1 class="text-2xl font-bold text-center text-gray-700">Welcome Back</h1>
 
       <form @submit.prevent="handleSubmit" class="space-y-6">
@@ -28,37 +26,16 @@
               placeholder="Password"
               class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
             />
-            <span
-              class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer"
-              @click="toggleShowPassword"
-            >
-              <img
-                class="icon-eye w-5 h-5"
-                v-if="showPassword"
-                src="../assets/svg/eye.svg"
-                alt="Show Password"
-                data-testid="show-password-icon"
-                id="show-password-icon"
-              />
-              <img
-                class="icon-eye w-5 h-5"
-                v-else
-                src="../assets/svg/crossed_eye.svg"
-                alt="Hide Password"
-                data-testid="hide-password-icon"
-                id="hide-password-icon"
-              />
+            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer" @click="toggleShowPassword">
+              <img class="icon-eye w-5 h-5" v-if="showPassword" src="../assets/svg/eye.svg" alt="Show Password" data-testid="show-password-icon" id="show-password-icon" />
+              <img class="icon-eye w-5 h-5" v-else src="../assets/svg/crossed_eye.svg" alt="Hide Password" data-testid="hide-password-icon" id="hide-password-icon" />
             </span>
           </div>
         </div>
 
         <div class="flex items-center justify-center">
           <div class="text-sm">
-            <a
-              href="/forgot-password"
-              class="font-medium text-blue-600 hover:underline"
-              >Forgot password?</a
-            >
+            <a href="/forgot-password" class="font-medium text-blue-600 hover:underline">Forgot password?</a>
           </div>
         </div>
         <button
@@ -71,9 +48,7 @@
       <div class="text-center">
         <p class="text-sm">
           Don't have an account?
-          <a href="/register" class="font-medium text-blue-600 hover:underline"
-            >Sign Up</a
-          >
+          <a href="/register" class="font-medium text-blue-600 hover:underline">Sign Up</a>
         </p>
       </div>
     </div>
@@ -91,6 +66,19 @@ const userInfo = ref({
   email: '',
   password: ''
 })
+
+function getJwtClaims(token) {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const payload = atob(base64)
+    const decoded = JSON.parse(payload)
+    return decoded // Return all claims to check iat and exp
+  } catch (e) {
+    console.error('Error decoding JWT:', e)
+    return {}
+  }
+}
 
 // const rememberMe = ref(false)
 const showPassword = ref(false)
@@ -148,6 +136,12 @@ const handleSubmit = async () => {
             sameSite: 'Strict'
           })
 
+          // Decode the JWT to get user information
+          const decodedToken = getJwtClaims(data.jwt)
+
+          // Store the decoded claims in cookies
+          localStorage.setItem('bv_user', JSON.stringify(decodedToken))
+
           // Redirect to dashboard upon successful login
           await navigateTo('/dashboard')
         } else {
@@ -186,8 +180,7 @@ const handleSubmit = async () => {
     } else if (error.request) {
       // The request was made but no response was received
       console.error('Error request:', error.request)
-      errorMessage =
-        'No response received from the server. Please check your internet connection.'
+      errorMessage = 'No response received from the server. Please check your internet connection.'
     } else {
       // Something happened in setting up the request that triggered an Error
       console.error('Error message:', error.message)

@@ -14,11 +14,8 @@
         <!-- User Dropdown Menu start -->
         <div>
           <div class="relative inline-block">
-            <div
-              class="flex items-center gap-x-2 cursor-pointer"
-              @click="toggleDropdown"
-            >
-              Marián Adamus
+            <div class="flex items-center gap-x-2 cursor-pointer" @click="toggleDropdown">
+              <p v-if="user">{{ user.firstName }} {{ user.lastName }}</p>
               <img
                 :class="{
                   'rotate-180': isOpen,
@@ -31,31 +28,16 @@
               />
             </div>
 
-            <ul
-              v-if="isOpen"
-              class="absolute right-0 w-48 py-2 mt-2 bg-white rounded-lg shadow-xl z-20"
-            >
+            <ul v-if="isOpen" class="absolute right-0 w-48 py-2 mt-2 bg-white rounded-lg shadow-xl z-20">
               <li>
-                <a
-                  href="/account"
-                  class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                  >Account</a
-                >
+                <a href="/account" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Account</a>
               </li>
               <li>
-                <a
-                  @click="logout"
-                  class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                  >Logout</a
-                >
+                <a @click="logout" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Logout</a>
               </li>
             </ul>
           </div>
-          <div
-            v-if="isOpen"
-            class="fixed inset-0 bg-transparent z-10"
-            @click="closeDropdown"
-          ></div>
+          <div v-if="isOpen" class="fixed inset-0 bg-transparent z-10" @click="closeDropdown"></div>
         </div>
         <!-- User Dropdown Menu end -->
       </header>
@@ -73,11 +55,7 @@
         class="menu h-screen-minus-80 space-y-6 py-2 px-2 bg-gray-800 text-white flex flex-col"
       >
         <nav>
-          <a
-            v-if="(mennuOpen && isMobile) || !isMobile"
-            href="/dashboard"
-            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
-          >
+          <a v-if="(mennuOpen && isMobile) || !isMobile" href="/dashboard" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
             <img class="icon" src="../assets/svg/projects.svg" alt="projects" />
             <span
               v-if="(mennuOpen && isMobile) || !isMobile"
@@ -90,11 +68,7 @@
               Projects
             </span>
           </a>
-          <a
-            v-if="(mennuOpen && isMobile) || !isMobile"
-            href="/users"
-            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
-          >
+          <a v-if="(mennuOpen && isMobile) || !isMobile" href="/users" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
             <img class="icon" src="../assets/svg/users.svg" alt="users" />
             <span
               v-if="(mennuOpen && isMobile) || !isMobile"
@@ -107,11 +81,7 @@
               Users
             </span>
           </a>
-          <a
-            v-if="(mennuOpen && isMobile) || !isMobile"
-            href="/plans"
-            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white"
-          >
+          <a v-if="(mennuOpen && isMobile) || !isMobile" href="/plans" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
             <img class="icon" src="../assets/svg/plans.svg" alt="plans" />
             <span
               v-if="(mennuOpen && isMobile) || !isMobile"
@@ -153,10 +123,20 @@ import hamburger from '../assets/svg/hamburger.vue'
 import ModalOneBtn from '../components/reusable/ModalOneBtn.vue'
 import GlobalSpinner from '../components/reusable/GlobalSpinner.vue'
 import Cookies from 'js-cookie'
-import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
+import { onMounted, onUnmounted, ref, reactive, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import mittBus from '../utils/mitt.js'
 import Notification from '../components/reusable/Notification.vue' // Import Notification
+
+const user = ref(null)
+
+onMounted(() => {
+  const storedUser = localStorage.getItem('bv_user')
+  if (storedUser) {
+    user.value = JSON.parse(storedUser)
+    console.log('user :>> ', user.value)
+  }
+})
 // Variables:
 const router = useRouter()
 const windowWidth = ref(0)
