@@ -1,10 +1,10 @@
 <template>
   <div class="mb-6">
-    <h2 class="text-xl pb-4">Recurring Expenses</h2>
-    <v-btn color="success" size="large" @click="openDialog" class="mb-6">Add New Recurring Expense</v-btn>
+    <h1 class="text-xl pb-4">RECCURING EXPENCES</h1>
+    <v-btn color="success" size="large" @click="openDialog" class="mb-6 w-full">Add New Recurring Expense</v-btn>
     <v-data-table :headers="headers" :items="expenses" :loading="loading" class="mb-6" hide-default-footer>
       <template v-slot:loading>
-        <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
+        <v-skeleton-loader type="table-row@5"></v-skeleton-loader>
       </template>
       <template v-slot:item.actions="{ item }">
         <div class="d-flex justify-end">
@@ -91,10 +91,10 @@ const refForm = ref(null) // Define the ref for the form
 
 // Headers definition
 const headers = [
-  { text: 'Name', value: 'name' },
-  { text: 'Amount', value: 'amount' },
-  { text: 'Frequency', value: 'frequency' },
-  { text: 'Actions', value: 'actions', sortable: false }
+  { title: 'Name', key: 'name' },
+  { title: 'Amount', key: 'amount' },
+  { title: 'Frequency', key: 'frequency' },
+  { text: 'Actions', key: 'actions', sortable: false }
 ]
 
 // Options for expense frequencies

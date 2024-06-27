@@ -1,10 +1,19 @@
 <template>
   <div class="tab-card shadow-md mx-1">
-    <h1 class="text-2xl pb-6 font-bold">PRODUCTS</h1>
+    <h1 class="text-2xl pb-6 font-bold">Types of Products</h1>
+    <p>
+      Please define all types of products and services for your business. We differentiate between subscription based (for example a monthly subscription for a membership) and
+      "sales per unit" type of produtcs/services (physical goods for ecomers or stores, meals for restaurants or event packages for agencies etc.).
+    </p>
   </div>
   <div class="mt-6">
     <v-card class="p-6 m-1">
-      <v-btn color="success" size="large" @click="openDialog" class="mb-6">Add New Product/Service</v-btn>
+      <div class="flex flex-col md:flex-row gap-10 justify-between">
+        <span>
+          <h1 class="text-2xl pb-6 font-bold">PRODUCTS</h1>
+        </span>
+        <v-btn color="success" size="large" @click="openDialog" class="mb-6">Add New Product/Service</v-btn>
+      </div>
       <v-data-table :headers="headers" :items="products" :loading="loading" class="mb-6">
         <template v-slot:loading>
           <v-skeleton-loader type="table-row@5"></v-skeleton-loader>
@@ -134,14 +143,13 @@ const refForm = ref(null) // Define the ref for the form
 
 // Headers definition
 const headers = [
-  { title: 'ID', key: 'id' },
   { title: 'Name', key: 'name' },
   { title: 'Description', key: 'description' },
   { title: 'Selling Price', key: 'selling_price' },
   { title: 'Subscription Price', key: 'subscription_price' },
   { title: 'Subscription Frequency', key: 'subscription_frequency' },
   { title: 'Type', key: 'type' },
-  { title: 'Actions', key: 'actions', sortable: false }
+  { text: 'Actions', key: 'actions', sortable: false }
 ]
 
 // Options for product types and subscription frequencies

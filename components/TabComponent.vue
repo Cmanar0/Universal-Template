@@ -1,6 +1,6 @@
 <template>
   <v-toolbar class="mx-1 custom-header" color="#1697F6">
-    <v-tabs v-model="tab" align-tabs="title">
+    <v-tabs v-model="tab" align-tabs="title" show-arrows>
       <v-tab v-for="item in items" :key="item.value" :value="item.value">
         {{ item.text }}
       </v-tab>

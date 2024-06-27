@@ -1,16 +1,36 @@
 <template>
   <div class="mb-6">
-    <h2 class="text-xl pb-4">Expenses Per Product</h2>
-    <v-btn color="success" size="large" @click="openDialog" class="mb-6">Add New Product Expense</v-btn>
+    <!-- <v-btn color="success" size="large" @click="openDialog" class="mb-12 w-full">Add New Product Expense</v-btn> -->
+    <span class="flex gap-2">
+      <h1 class="text-xl pb-4">PER UNIT EXPENCES</h1>
+      <v-tooltip
+        width="40%"
+        text="Please note, this section is not for subscription-based products. If you have subscription-based products, do not include their expenses here. For subcription based product - you should define the expences in the 'one time' and 'reoccuring' section based on the nature of the expences. "
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </span>
+    <p>
+      This section is for expenses related to "sales per unit" type of products. If you buy your product in bulk, calculate the total expenses, including purchase cost,
+      transportation, packaging, etc. Then, divide this total by the number of products in the bulk to determine the expense for a single product. Submit this per-unit expense
+      here.
+    </p>
     <v-data-table :headers="headers" :items="expenses" :loading="loading" class="mb-6" hide-default-footer>
       <template v-slot:loading>
-        <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
+        <v-skeleton-loader type="table-row@5"></v-skeleton-loader>
       </template>
       <template v-slot:item.actions="{ item }">
         <div class="d-flex justify-end">
           <v-icon class="me-2" size="small" @click="editItem(item)">mdi-pencil</v-icon>
           <v-icon size="small" @click="deleteItem(item)">mdi-delete</v-icon>
         </div>
+        <!-- <td>
+          <v-btn color="primary" @click="editItem(item)">
+            {{ item.amount ? 'Edit' : 'Add Expense' }}
+          </v-btn>
+        </td> -->
       </template>
     </v-data-table>
 
@@ -79,9 +99,9 @@ const refForm = ref(null) // Define the ref for the form
 
 // Headers definition
 const headers = [
-  { text: 'Name', value: 'name' },
-  { text: 'Expense', value: 'expense' },
-  { text: 'Actions', value: 'actions', sortable: false }
+  { title: 'Name', key: 'name' },
+  { title: 'Expense', key: 'expense' },
+  { text: 'Actions', key: 'actions', sortable: false }
 ]
 
 // Form validation rules

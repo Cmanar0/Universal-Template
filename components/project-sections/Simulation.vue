@@ -1,314 +1,197 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl pb-6 font-bold">PRODUCTS</h1>
-    <v-btn color="success" size="large" @click="openDialog" class="mb-6">Add New Product/Service</v-btn>
-    <v-data-table :headers="headers" :items="products" :loading="loading" class="mb-6">
-      <template v-slot:loading>
-        <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
-      </template>
-
-      <template v-slot:item.subscription_price="{ item }">
-        <span v-if="item.type === 'subscription_sales'">{{ item.subscription_price }}</span>
-      </template>
-      <template v-slot:item.subscription_frequency="{ item }">
-        <span v-if="item.type === 'subscription_sales'">{{ item.subscription_frequency }}</span>
-      </template>
-      <template v-slot:item.actions="{ item }">
-        <div class="d-flex justify-end">
-          <v-icon class="me-2" size="small" @click="editItem(item)">mdi-pencil</v-icon>
-          <v-icon size="small" @click="deleteItem(item)">mdi-delete</v-icon>
+  <div class="min-h-screen bg-gray-100 p-8">
+    <!-- Products Information -->
+    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+      <h2 class="text-lg font-bold mb-4">Products Information</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div v-for="product in products" :key="product.name" class="bg-gray-50 p-4 rounded-lg shadow">
+          <h3 class="font-semibold">{{ product.name }}</h3>
+          <p>Expense per Unit: {{ product.expensePerUnit }} USD</p>
+          <p>Selling Price: {{ product.sellingPrice }} USD</p>
+          <p>Sales per Month: {{ product.salesPerMonth }}</p>
         </div>
-      </template>
-    </v-data-table>
-
-    <v-dialog v-model="dialog" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="headline">{{ formTitle }}</span>
-        </v-card-title>
-        <v-card-text>
-          <v-form ref="refForm" v-model="isFormValid">
-            <v-text-field v-model="editedItem.name" :rules="[rules.required]" label="Product Name" color="#1697F6" variant="outlined" dense class="pt-2"></v-text-field>
-            <v-textarea v-model="editedItem.description" :rules="[rules.required]" label="Product Description" color="#1697F6" variant="outlined" dense class="pt-2"></v-textarea>
-
-            <v-text-field
-              v-if="editedItem.type === 'sales_per_unit'"
-              v-model="editedItem.selling_price"
-              :rules="[rules.required, rules.numeric]"
-              label="Selling Price"
-              type="number"
-              color="#1697F6"
-              variant="outlined"
-              dense
-              class="pt-2"
-            ></v-text-field>
-            <v-text-field
-              v-if="editedItem.type === 'subscription_sales'"
-              v-model="editedItem.subscription_price"
-              :rules="[rules.required, rules.numeric]"
-              label="Subscription Price"
-              type="number"
-              color="#1697F6"
-              variant="outlined"
-              dense
-              class="pt-2"
-            ></v-text-field>
-
-            <v-select
-              v-model="editedItem.type"
-              :rules="[rules.required]"
-              :items="productTypes"
-              label="Product Type"
-              color="#1697F6"
-              variant="outlined"
-              dense
-              class="pt-2"
-            ></v-select>
-            <v-select
-              v-if="editedItem.type === 'subscription_sales'"
-              v-model="editedItem.subscription_frequency"
-              :rules="[rules.required]"
-              :items="subscriptionFrequencies"
-              label="Subscription Frequency"
-              color="#1697F6"
-              variant="outlined"
-              dense
-              class="pt-2"
-            ></v-select>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
-              <v-btn color="blue darken-1" text @click="submitProduct">Save</v-btn>
-            </v-card-actions>
-          </v-form>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog v-model="dialogDelete" max-width="600px">
-      <v-card>
-        <v-card-title class="headline">Are you sure you want to delete this item?</v-card-title>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-          <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      </div>
+    </div>
+    <!-- Range Area Chart -->
+    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+      <client-only>
+        <apexchart ref="apexChart" type="rangeArea" height="350" :options="chartOptions" :series="series"></apexchart>
+      </client-only>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { VBtn, VDataTable, VDialog, VCard, VCardTitle, VCardText, VCardActions, VTextField, VTextarea, VForm, VSelect, VSpacer, VIcon, VSkeletonLoader } from 'vuetify/components'
+import { ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import mittBus from '../utils/mitt.js'
 
-// Refs and initial data setup
-const dialog = ref(false)
-const dialogDelete = ref(false)
-const isFormValid = ref(false)
-const editedIndex = ref(-1)
-const editedItem = ref({
-  id: '',
-  name: '',
-  description: '',
-  selling_price: null,
-  subscription_price: null,
-  subscription_frequency: null,
-  type: 'sales_per_unit'
-})
-const newProduct = ref({
-  name: '',
-  description: '',
-  selling_price: null,
-  subscription_price: null,
-  subscription_frequency: null,
-  type: 'sales_per_unit'
-})
-const products = ref([])
-const refForm = ref(null) // Define the ref for the form
+// Lazy load Vue-ApexCharts
+const ApexCharts = defineAsyncComponent(() => import('vue3-apexcharts'))
 
-// Headers definition
-const headers = [
-  { title: 'ID', key: 'id' },
-  { title: 'Name', key: 'name' },
-  { title: 'Description', key: 'description' },
-  { title: 'Selling Price', key: 'selling_price' },
-  { title: 'Subscription Price', key: 'subscription_price' },
-  { title: 'Subscription Frequency', key: 'subscription_frequency' },
-  { title: 'Type', key: 'type' },
-  { title: 'Actions', key: 'actions', sortable: false }
+// Timeline (categories)
+const timeline = ref([
+  '2022-01-01',
+  '2022-02-01',
+  '2022-03-01',
+  '2022-04-01',
+  '2022-05-01',
+  '2022-06-01',
+  '2022-07-01',
+  '2022-08-01',
+  '2022-09-01',
+  '2022-10-01',
+  '2022-11-01',
+  '2022-12-01',
+  '2023-01-01',
+  '2023-02-01',
+  '2023-03-01',
+  '2023-04-01',
+  '2023-05-01',
+  '2023-06-01',
+  '2023-07-01',
+  '2023-08-01',
+  '2023-09-01',
+  '2023-10-01',
+  '2023-11-01',
+  '2023-12-01'
+])
+
+// Chart options
+const chartOptions = ref({
+  chart: {
+    height: 350,
+    type: 'rangeArea'
+  },
+  stroke: {
+    curve: 'smooth'
+  },
+  title: {
+    text: 'Business Expenses and Profits'
+  },
+  markers: {
+    hover: {
+      sizeOffset: 5
+    }
+  },
+  dataLabels: {
+    enabled: false
+  },
+  yaxis: {
+    labels: {
+      formatter: val => {
+        return val + ' USD'
+      }
+    }
+  },
+  xaxis: {
+    type: 'category',
+    categories: timeline.value
+  }
+})
+
+// Function to add x values to the data
+const addXValues = (data, timeline) => {
+  return data.map((y, index) => ({ x: timeline[index], y }))
+}
+
+// Product Information
+const products = ref([
+  { name: 'Product 1', expensePerUnit: 30, sellingPrice: 35, salesPerMonth: 10 },
+  { name: 'Product 2', expensePerUnit: 20, sellingPrice: 25, salesPerMonth: 10 }
+])
+
+// One-time expenses (constant): lower value = 0, higher value = constant number
+const oneTimeExpenses = [
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000],
+  [0, 1000]
 ]
 
-// Options for product types and subscription frequencies
-const productTypes = ['sales_per_unit', 'subscription_sales']
-const subscriptionFrequencies = ['daily', 'weekly', 'monthly', 'annually']
-
-// Form validation rules
-const rules = {
-  required: value => !!value || 'Required.',
-  numeric: value => (!isNaN(parseFloat(value)) && isFinite(value)) || 'Must be a number.'
+// Recurring expenses (compounded monthly): lower value = higher value of One-Time Expenses, higher value = compounded value
+const monthlyExpense = 200
+const recurringExpenses = []
+let currentExpense = 1000 + monthlyExpense // Start with the higher value of One-Time Expenses
+for (let i = 0; i < timeline.value.length; i++) {
+  recurringExpenses.push([1000, currentExpense])
+  currentExpense += monthlyExpense
 }
 
-// Computed property for form title
-const formTitle = computed(() => {
-  return editedIndex.value === -1 ? 'Add New Product/Service' : 'Edit Product/Service'
-})
+// Sales dependent expenses and profits
+const salesDependentExpenses = []
+const profits = []
+let cumulativeProfit = 0
 
-// Loading state
-const loading = ref(false)
-
-// Function to fetch products from API
-const fetchProducts = () => {
-  loading.value = true
-  console.log('Fetching data...')
-  // Simulate API call with promise
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: 'PS1',
-          type: 'sales_per_unit',
-          name: 'Smartphone Case',
-          description: 'Durable and stylish smartphone cases.',
-          selling_price: 10,
-          subscription_frequency: null
-        },
-        {
-          id: 'PS2',
-          type: 'sales_per_unit',
-          name: 'Screen Protector',
-          description: 'High-quality screen protectors.',
-          selling_price: 7,
-          subscription_frequency: null
-        }
-      ])
-    }, 1000)
-  }).then(data => {
-    console.log('Data fetched:', data)
-    products.value = data
-    loading.value = false
-  })
+for (let i = 0; i < timeline.value.length; i++) {
+  const totalSalesExpense = products.value.reduce((sum, product) => sum + product.expensePerUnit * product.salesPerMonth, 0)
+  const totalRevenue = products.value.reduce((sum, product) => sum + product.sellingPrice * product.salesPerMonth, 0)
+  const totalExpenses = recurringExpenses[i][1] + totalSalesExpense
+  salesDependentExpenses.push([recurringExpenses[i][1], totalExpenses])
+  cumulativeProfit += totalRevenue
+  profits.push([0, cumulativeProfit])
 }
 
-// Function to open the dialog for adding a new product
-const openDialog = () => {
-  editedIndex.value = -1
-  editedItem.value = { ...newProduct.value }
-  dialog.value = true
-}
-
-// Function to submit a product (create or edit)
-const submitProduct = async () => {
-  const form = refForm.value
-  const valid = await form.validate()
-  if (!isFormValid.value) {
-    console.error('Validation failed. Please check the form fields.')
-    return
+// Add x values to the series data
+const series = ref([
+  {
+    name: 'Profits',
+    data: addXValues(profits, timeline.value)
+  },
+  {
+    name: 'One-Time Expenses',
+    data: addXValues(oneTimeExpenses, timeline.value)
+  },
+  {
+    name: 'Recurring Expenses',
+    data: addXValues(recurringExpenses, timeline.value)
+  },
+  {
+    name: 'Sales Dependent Expenses',
+    data: addXValues(salesDependentExpenses, timeline.value)
   }
-  if (valid) {
-    if (editedIndex.value > -1) {
-      // Edit existing product
-      updateProduct(editedItem.value).then(() => {
-        Object.assign(products.value[editedIndex.value], editedItem.value)
-        close()
-      })
-    } else {
-      // Create new product
-      createProduct(editedItem.value).then(newProduct => {
-        products.value.push(newProduct)
-        close()
-      })
-    }
-  } else {
-    console.error('Validation failed. Please check the form fields.')
-  }
-}
+])
 
-// Function to create a product via API
-const createProduct = product => {
-  console.log('Creating product...', product)
-  // Simulate API call with promise
-  return new Promise(resolve => {
-    setTimeout(() => {
-      console.log('Product created successfully:', product)
-      resolve({ ...product, id: `PS${products.value.length + 1}` })
-    }, 500)
-  })
-}
+const apexChart = ref(null)
 
-// Function to update a product via API
-const updateProduct = product => {
-  loading.value = true
-
-  console.log('Updating product...', product)
-  // Simulate API call with promise
-  return new Promise(resolve => {
-    setTimeout(() => {
-      console.log('Product updated successfully:', product)
-      resolve(product)
-    }, 500)
-  }).then(updatedProduct => {
-    loading.value = false
-  })
-}
-
-// Function to delete a product via API
-const deleteProduct = productId => {
-  console.log('Deleting product...', productId)
-  // Simulate API call with promise
-  return new Promise(resolve => {
-    setTimeout(() => {
-      console.log('Product deleted successfully:', productId)
-      resolve(true)
-    }, 500)
-  })
-}
-
-// Function to handle item edit
-const editItem = item => {
-  editedIndex.value = products.value.indexOf(item)
-  editedItem.value = { ...item }
-  dialog.value = true
-}
-
-// Function to handle item delete
-const deleteItem = item => {
-  editedIndex.value = products.value.indexOf(item)
-  editedItem.value = { ...item }
-  dialogDelete.value = true
-}
-
-// Function to confirm item delete
-const deleteItemConfirm = () => {
-  deleteProduct(editedItem.value.id).then(() => {
-    products.value.splice(editedIndex.value, 1)
-    closeDelete()
-  })
-}
-
-// Function to close the dialog
-const close = () => {
-  dialog.value = false
-  nextTick(() => {
-    editedItem.value = { ...newProduct.value }
-    editedIndex.value = -1
-  })
-}
-
-// Function to close the delete dialog
-const closeDelete = () => {
-  dialogDelete.value = false
-  nextTick(() => {
-    editedItem.value = { ...newProduct.value }
-    editedIndex.value = -1
-  })
-}
-
-// Fetch products on component mount
 onMounted(() => {
-  fetchProducts()
+  const updateCharts = () => {
+    if (apexChart.value && apexChart.value.updateOptions) {
+      apexChart.value.updateOptions(apexChart.value.options)
+    }
+  }
+
+  mittBus.on('update-charts', updateCharts)
+
+  console.log('series :>> ', series.value)
+
+  return () => {
+    mittBus.off('update-charts', updateCharts)
+  }
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.bg-gray-100 {
+  background-color: #f7fafc;
+}
+</style>

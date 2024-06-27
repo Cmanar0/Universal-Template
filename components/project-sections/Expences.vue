@@ -1,22 +1,22 @@
 <template>
   <div class="tab-card shadow-md mx-1">
-    <h1 class="text-2xl pb-6 font-bold">EXPENSES</h1>
+    <h1 class="text-2xl pb-6 font-bold">Expences types</h1>
     <p class="pb-4">
       Please define all types of expenses for your business. These might include expenses per product/service sold (if you are selling products or services), one-time expenses such
       as the purchase of office equipment, or recurring expenses.
     </p>
   </div>
   <div class="mt-6">
-    <div class="expenses-container">
-      <v-card class="p-6 m-1">
+    <div class="expenses-container flex flex-wrap">
+      <div class="cust-card p-6 m-1" style="width: calc(100% - 50px)">
         <expenses-per-product />
-      </v-card>
-      <v-card class="p-6 m-1">
+      </div>
+      <div class="cust-card p-6 m-1" style="width: calc(100% - 50px)">
         <one-time-expenses />
-      </v-card>
-      <v-card class="p-6 m-1">
+      </div>
+      <div class="cust-card p-6 m-1 w-full md:w-auto">
         <recurring-expenses />
-      </v-card>
+      </div>
     </div>
   </div>
 </template>
@@ -41,6 +41,12 @@ import RecurringExpenses from './expences-types/RecurringExpenses.vue'
 
 .expenses-container > * {
   flex: 1;
-  min-width: 250px; /* Adjust as needed */
+}
+
+@media (min-width: 768px) {
+  .expenses-container > :nth-child(1),
+  .expenses-container > :nth-child(2) {
+    width: 100px;
+  }
 }
 </style>

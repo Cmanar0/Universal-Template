@@ -1,9 +1,12 @@
 <template>
   <div class="tab-card shadow-md mx-1">
-    <h1 class="text-2xl pb-6 font-bold">DESCRIPTION</h1>
+    <h1 class="text-2xl pb-6 font-bold">Define Your Business</h1>
+    <p>The following information will help us to better understand your business which will affect the quality of AI generated recommendations and business model presentation.</p>
   </div>
   <div class="mt-6">
     <v-card class="p-6 m-1">
+      <h1 class="text-2xl pb-6 font-bold">DESCRIPTION</h1>
+
       <v-form ref="form" v-model="isFormValid" @submit.prevent="submitTask">
         <div class="mb-4 flex flex-col md:flex-row items-center">
           <label for="businessName" class="block text-gray-700 font-medium w-full md:w-1/4 text-left pr-4">Business Name</label>
