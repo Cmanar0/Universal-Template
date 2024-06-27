@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-6 md:px-8">
+  <div class="mb-6">
     <h2 class="text-xl pb-4">One-Time Expenses</h2>
     <v-btn color="success" size="large" @click="openDialog" class="mb-6">Add New One-Time Expense</v-btn>
     <v-data-table :headers="headers" :items="expenses" :loading="loading" class="mb-6" hide-default-footer>
