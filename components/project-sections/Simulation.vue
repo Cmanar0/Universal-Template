@@ -1,105 +1,101 @@
 <template>
-  <div class="tab-card shadow-md mx-1">
+  <div class="p-6">
     <h1 class="text-2xl pb-6 font-bold">PRODUCTS</h1>
-  </div>
-  <div class="mt-6">
-    <v-card class="p-6 m-1">
-      <v-btn color="success" size="large" @click="openDialog" class="mb-6">Add New Product/Service</v-btn>
-      <v-data-table :headers="headers" :items="products" :loading="loading" class="mb-6">
-        <template v-slot:loading>
-          <v-skeleton-loader type="table-row@5"></v-skeleton-loader>
-        </template>
+    <v-btn color="success" size="large" @click="openDialog" class="mb-6">Add New Product/Service</v-btn>
+    <v-data-table :headers="headers" :items="products" :loading="loading" class="mb-6">
+      <template v-slot:loading>
+        <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
+      </template>
 
-        <template v-slot:item.subscription_price="{ item }">
-          <span v-if="item.type === 'subscription_sales'">{{ item.subscription_price }}</span>
-        </template>
-        <template v-slot:item.subscription_frequency="{ item }">
-          <span v-if="item.type === 'subscription_sales'">{{ item.subscription_frequency }}</span>
-        </template>
-        <template v-slot:item.actions="{ item }">
-          <div class="d-flex justify-end">
-            <v-icon class="me-2" size="small" @click="editItem(item)">mdi-pencil</v-icon>
-            <v-icon size="small" @click="deleteItem(item)">mdi-delete</v-icon>
-          </div>
-        </template>
-      </v-data-table>
+      <template v-slot:item.subscription_price="{ item }">
+        <span v-if="item.type === 'subscription_sales'">{{ item.subscription_price }}</span>
+      </template>
+      <template v-slot:item.subscription_frequency="{ item }">
+        <span v-if="item.type === 'subscription_sales'">{{ item.subscription_frequency }}</span>
+      </template>
+      <template v-slot:item.actions="{ item }">
+        <div class="d-flex justify-end">
+          <v-icon class="me-2" size="small" @click="editItem(item)">mdi-pencil</v-icon>
+          <v-icon size="small" @click="deleteItem(item)">mdi-delete</v-icon>
+        </div>
+      </template>
+    </v-data-table>
 
-      <v-dialog v-model="dialog" max-width="600px">
-        <v-card>
-          <v-card-title>
-            <span class="headline">{{ formTitle }}</span>
-          </v-card-title>
-          <v-card-text>
-            <v-form ref="refForm" v-model="isFormValid">
-              <v-text-field v-model="editedItem.name" :rules="[rules.required]" label="Product Name" color="#1697F6" variant="outlined" dense class="pt-2"></v-text-field>
-              <v-textarea v-model="editedItem.description" :rules="[rules.required]" label="Product Description" color="#1697F6" variant="outlined" dense class="pt-2"></v-textarea>
+    <v-dialog v-model="dialog" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">{{ formTitle }}</span>
+        </v-card-title>
+        <v-card-text>
+          <v-form ref="refForm" v-model="isFormValid">
+            <v-text-field v-model="editedItem.name" :rules="[rules.required]" label="Product Name" color="#1697F6" variant="outlined" dense class="pt-2"></v-text-field>
+            <v-textarea v-model="editedItem.description" :rules="[rules.required]" label="Product Description" color="#1697F6" variant="outlined" dense class="pt-2"></v-textarea>
 
-              <v-text-field
-                v-if="editedItem.type === 'sales_per_unit'"
-                v-model="editedItem.selling_price"
-                :rules="[rules.required, rules.numeric]"
-                label="Selling Price"
-                type="number"
-                color="#1697F6"
-                variant="outlined"
-                dense
-                class="pt-2"
-              ></v-text-field>
-              <v-text-field
-                v-if="editedItem.type === 'subscription_sales'"
-                v-model="editedItem.subscription_price"
-                :rules="[rules.required, rules.numeric]"
-                label="Subscription Price"
-                type="number"
-                color="#1697F6"
-                variant="outlined"
-                dense
-                class="pt-2"
-              ></v-text-field>
+            <v-text-field
+              v-if="editedItem.type === 'sales_per_unit'"
+              v-model="editedItem.selling_price"
+              :rules="[rules.required, rules.numeric]"
+              label="Selling Price"
+              type="number"
+              color="#1697F6"
+              variant="outlined"
+              dense
+              class="pt-2"
+            ></v-text-field>
+            <v-text-field
+              v-if="editedItem.type === 'subscription_sales'"
+              v-model="editedItem.subscription_price"
+              :rules="[rules.required, rules.numeric]"
+              label="Subscription Price"
+              type="number"
+              color="#1697F6"
+              variant="outlined"
+              dense
+              class="pt-2"
+            ></v-text-field>
 
-              <v-select
-                v-model="editedItem.type"
-                :rules="[rules.required]"
-                :items="productTypes"
-                label="Product Type"
-                color="#1697F6"
-                variant="outlined"
-                dense
-                class="pt-2"
-              ></v-select>
-              <v-select
-                v-if="editedItem.type === 'subscription_sales'"
-                v-model="editedItem.subscription_frequency"
-                :rules="[rules.required]"
-                :items="subscriptionFrequencies"
-                label="Subscription Frequency"
-                color="#1697F6"
-                variant="outlined"
-                dense
-                class="pt-2"
-              ></v-select>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
-                <v-btn color="blue darken-1" text @click="submitProduct">Save</v-btn>
-              </v-card-actions>
-            </v-form>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
+            <v-select
+              v-model="editedItem.type"
+              :rules="[rules.required]"
+              :items="productTypes"
+              label="Product Type"
+              color="#1697F6"
+              variant="outlined"
+              dense
+              class="pt-2"
+            ></v-select>
+            <v-select
+              v-if="editedItem.type === 'subscription_sales'"
+              v-model="editedItem.subscription_frequency"
+              :rules="[rules.required]"
+              :items="subscriptionFrequencies"
+              label="Subscription Frequency"
+              color="#1697F6"
+              variant="outlined"
+              dense
+              class="pt-2"
+            ></v-select>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
+              <v-btn color="blue darken-1" text @click="submitProduct">Save</v-btn>
+            </v-card-actions>
+          </v-form>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
 
-      <v-dialog v-model="dialogDelete" max-width="600px">
-        <v-card>
-          <v-card-title class="headline">Are you sure you want to delete this item?</v-card-title>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-            <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
-            <v-spacer></v-spacer>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-card>
+    <v-dialog v-model="dialogDelete" max-width="600px">
+      <v-card>
+        <v-card-title class="headline">Are you sure you want to delete this item?</v-card-title>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+          <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -315,8 +311,4 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-#products {
-  font-weight: bold !important;
-}
-</style>
+<style scoped></style>
