@@ -1,9 +1,4 @@
-import {
-  defineNuxtRouteMiddleware,
-  useCookie,
-  useNuxtApp,
-  navigateTo
-} from '#app'
+import { defineNuxtRouteMiddleware, useCookie, useNuxtApp, navigateTo } from '#app'
 import Cookies from 'js-cookie'
 import apiService from '../services/api-request' // Update the path as necessary
 
@@ -65,7 +60,7 @@ function getJwtClaims(token) {
 async function renewToken(token, baseApiUrl) {
   try {
     const response = await apiService.post(
-      'auth/refresh-token', // Endpoint without base URL
+      'api/auth/refresh-token', // Endpoint without base URL
       {}, // Empty data payload
       {}, // Empty params
       { 'x-auth-token': token }, // Custom header with the token
