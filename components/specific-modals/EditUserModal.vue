@@ -6,10 +6,10 @@
       </v-card-title>
       <v-card-text>
         <v-form @submit.prevent="updateUser">
-          <v-text-field label="First Name" v-model="form.firstName" required></v-text-field>
-          <v-text-field label="Last Name" v-model="form.lastName" required></v-text-field>
+          <v-text-field label="First Name" v-model="form.firstName"></v-text-field>
+          <v-text-field label="Last Name" v-model="form.lastName"></v-text-field>
           <v-text-field label="Email" v-model="form.email" required type="email"></v-text-field>
-          <v-text-field label="Password" v-model="form.password" required type="password"></v-text-field>
+          <v-text-field label="Password" v-model="form.password" type="password"></v-text-field>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -21,24 +21,12 @@
   </v-dialog>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { reactive, ref, watch, defineProps, defineEmits } from 'vue'
-import { addNotification } from '../stores/notificationStore'
 import apiService from '../services/api-request' // Update the path as necessary
 
-interface User {
-  id: string
-  email?: string
-  firstName?: string | null
-  lastName?: string | null
-  lang?: string
-  isActive?: boolean
-  registeredAt?: string
-  updatedAt?: string
-}
-
 const props = defineProps({
-  user: Object as () => User
+  user: Object
 })
 
 const emits = defineEmits(['close', 'update'])
@@ -79,22 +67,21 @@ const closeModal = () => {
 
 const updateUser = async () => {
   const updatedFields = Object.keys(form).reduce((acc, key) => {
-    if (form[key] !== initialForm[key]) {
+    if (form[key] !== initialForm[key] && form[key] !== '') {
       acc[key] = form[key]
     }
     return acc
   }, {})
-
+  console.log('props.user.id :>> ', props.user.id)
   try {
-    const response = await apiService.patch(`/api/users/${form.id}`, updatedFields)
-    emits('update', response.data)
+    await apiService.patch(`/api/users/${props.user.id}`, updatedFields)
+    emits('update', updatedFields)
     closeModal()
   } catch (error) {
     console.error('Failed to update user:', error)
     addNotification({
-      title: 'Error',
-      message: error.response?.data?.message || 'Failed to update user',
-      color: 'red'
+      type: 'error',
+      message: 'Failed to update user. Please try again.'
     })
   }
 }

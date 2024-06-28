@@ -51,7 +51,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
                 <v-menu>
                   <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-dots-vertical" v-bind="props"></v-btn>
+                    <v-icon icon="mdi-dots-vertical" v-bind="props"></v-icon>
                   </template>
                   <v-list>
                     <v-list-item @click="openEditModal(user)">
@@ -96,59 +96,50 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import apiService from '../services/api-request' // Update the path as necessary
 import EditUserModal from './specific-modals/EditUserModal.vue'
 import ModalTwoBtns from './reusable/ModalTwoBtns.vue'
 import { addNotification } from '../stores/notificationStore' // Import addNotification
 
-interface User {
-  id: string
-  email?: string
-  firstName?: string | null
-  lastName?: string | null
-  lang?: string
-  isActive?: boolean
-  registeredAt?: string
-  updatedAt?: string
-}
+const users = ref([])
 
-const users = ref<User[]>([])
-
-const dropdownOpen = ref<string | null>(null)
+const dropdownOpen = ref(null)
 const isDeactivateModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
-const selectedUser = ref<User | null>(null)
-const deactivateUser = reactive<User>({
+const selectedUser = ref(null)
+const deactivateUser = reactive({
   id: ''
 })
 
-const deleteUser = reactive<User>({
+const deleteUser = reactive({
   id: ''
 })
 
 const fetchUsers = async () => {
   try {
     const response = await apiService.get('/api/users')
-    users.value = response.data.users
+    users.value = response.data.data // Adjusted to access the correct data structure
+    console.log('response :>> ', response)
   } catch (error) {
     console.error('Failed to fetch users:', error)
   }
 }
 
-const openEditModal = (user: User) => {
+const openEditModal = user => {
+  console.log('user :>> ', user)
   selectedUser.value = user
   dropdownOpen.value = null
 }
 
-const openDeactivateModal = (user: User) => {
+const openDeactivateModal = user => {
   Object.assign(deactivateUser, user)
   isDeactivateModalOpen.value = true
   dropdownOpen.value = null
 }
 
-const openDeleteModal = (user: User) => {
+const openDeleteModal = user => {
   Object.assign(deleteUser, user)
   isDeleteModalOpen.value = true
   dropdownOpen.value = null
@@ -159,63 +150,19 @@ const closeModal = () => {
   isDeleteModalOpen.value = false
 }
 
-const updateUser = async (updatedUser: User) => {
-  console.log('updatedUser :>> ', updatedUser)
-  try {
-    const response = await apiService.patch(`/api/users/${updatedUser.id}`, updatedUser)
-    addNotification({
-      title: 'Success',
-      message: 'User updated successfully',
-      color: 'green'
-    })
-  } catch (error) {
-    console.error('Failed to update user:', error)
-    addNotification({
-      title: 'Error',
-      message: error.response?.data?.message || 'Failed to update user',
-      color: 'red'
-    })
-  }
+const updateUser = async updatedUser => {
   await fetchUsers()
   closeModal()
 }
 
 const confirmDeactivate = async () => {
-  try {
-    const response = await apiService.patch(`/api/users/${deactivateUser.id}`, { isActive: !deactivateUser.isActive })
-    addNotification({
-      title: 'Success',
-      message: `User ${deactivateUser.isActive ? 'deactivated' : 'activated'} successfully`,
-      color: 'green'
-    })
-  } catch (error) {
-    console.error(`Failed to ${deactivateUser.isActive ? 'deactivate' : 'activate'} user:`, error)
-    addNotification({
-      title: 'Error',
-      message: error.response?.data?.message || `Failed to ${deactivateUser.isActive ? 'deactivate' : 'activate'} user`,
-      color: 'red'
-    })
-  }
+  await apiService.patch(`/api/users/${deactivateUser.id}`, { isActive: !deactivateUser.isActive })
   await fetchUsers()
   closeModal()
 }
 
 const confirmDelete = async () => {
-  try {
-    const response = await apiService.delete(`/api/users/${deleteUser.id}`)
-    addNotification({
-      title: 'Success',
-      message: 'User deleted successfully',
-      color: 'green'
-    })
-  } catch (error) {
-    console.error('Failed to delete user:', error)
-    addNotification({
-      title: 'Error',
-      message: error.response?.data?.message || 'Failed to delete user',
-      color: 'red'
-    })
-  }
+  await apiService.delete(`/api/users/${deleteUser.id}`)
   await fetchUsers()
   closeModal()
 }
