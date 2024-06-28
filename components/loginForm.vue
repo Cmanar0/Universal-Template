@@ -91,58 +91,36 @@ const handleSubmit = async () => {
   mittBus.emit('loader-on')
 
   try {
-    // Define the API endpoint
     const url = 'https://next-backend-six.vercel.app/api/auth'
     const payload = {
       email: userInfo.value.email,
       password: userInfo.value.password
     }
 
-    // Send email and password for authentication using Axios
     const response = await axios.post(url, payload, {
       headers: {
         'Content-Type': 'application/json'
       }
     })
 
-    // Check the HTTP response status code
-    if (response.status >= 200 && response.status < 300) {
+    if (response.status === 200) {
       const data = response.data
+      console.log('response :>> ', response)
 
-      // Check if the response data contains an error status
-      if (data.status && data.status !== 200) {
-        let errorMessage = 'Login failed. Please try again.'
+      if (data.message === 'User authenticated' && data.data) {
+        const jwt = data.data.jwt
 
-        // Check if data.message is an array and contains error messages
-        if (Array.isArray(data.message)) {
-          errorMessage = data.message.map(msg => `${msg.message}`).join(' ')
-        }
-
-        addError({
-          header: 'Error',
-          content: errorMessage,
-          btnText: 'Ok'
-        })
-        console.error('Login failed:', data.message)
-      } else {
-        console.log('Login successful:', data)
-
-        // Store JWT in cookies for future requests
-        if (data.jwt) {
-          console.log('submit data.jwt :>> ', data.jwt)
-          Cookies.set('bv_jwt', data.jwt, {
+        if (jwt) {
+          console.log('submit data.jwt :>> ', jwt)
+          Cookies.set('bv_jwt', jwt, {
             expires: 7,
             secure: true,
             sameSite: 'Strict'
           })
 
-          // Decode the JWT to get user information
-          const decodedToken = getJwtClaims(data.jwt)
-
-          // Store the decoded claims in cookies
+          const decodedToken = getJwtClaims(jwt)
           localStorage.setItem('bv_user', JSON.stringify(decodedToken))
 
-          // Redirect to dashboard upon successful login
           await navigateTo('/dashboard')
         } else {
           console.log('JWT not provided in response')
@@ -152,9 +130,15 @@ const handleSubmit = async () => {
             btnText: 'Ok'
           })
         }
+      } else {
+        addError({
+          header: 'Error',
+          content: 'Unexpected response format.',
+          btnText: 'Ok'
+        })
+        console.error('Unexpected response format:', data)
       }
-    } else if (response.status >= 300) {
-      // Handle 3xx, 4xx, and 5xx responses
+    } else {
       const errorMessage = `Login failed with status code: ${response.status}. ${response.statusText}`
       addError({
         header: 'Error',
@@ -166,33 +150,28 @@ const handleSubmit = async () => {
   } catch (error) {
     let errorMessage = 'Login failed. Please try again.'
 
-    // Handle Axios errors
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
       console.error('Error response:', error.response.data)
-      errorMessage =
-        error.response.data && error.response.data.message
-          ? Array.isArray(error.response.data.message)
-            ? error.response.data.message.map(msg => `${msg.message}`).join(' ')
-            : error.response.data.message
-          : `Error: ${error.response.status}`
+
+      errorMessage = error.response.data.errors ? error.response.data.errors.map(err => err.message).join(' ') : `Error: ${error.response.status}`
     } else if (error.request) {
-      // The request was made but no response was received
       console.error('Error request:', error.request)
       errorMessage = 'No response received from the server. Please check your internet connection.'
     } else {
-      // Something happened in setting up the request that triggered an Error
       console.error('Error message:', error.message)
       errorMessage = error.message
     }
 
-    // Add the error to the global store
-    addError({ header: 'Error', content: errorMessage, btnText: 'Ok' })
+    addError({
+      header: 'Error',
+      content: errorMessage,
+      btnText: 'Ok'
+    })
   } finally {
     mittBus.emit('loader-off')
   }
 }
+
 const navigateTo = (url: string) => {
   window.location.href = url
 }
