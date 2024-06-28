@@ -5,7 +5,6 @@ import mittBus from '../utils/mitt.js'
 
 // Get the base URL from the environment variables
 const BASE_API_URL = import.meta.env.NUXT_PUBLIC_BASE_API_URL
-
 // Create an Axios instance
 const api = axios.create({
   baseURL: BASE_API_URL,
@@ -28,20 +27,15 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   response => {
-    // Check for non-200 status in the response data
-    if ((response.status === 200 || response.status === 201) && response.data.status && response.data.status !== 200) {
-      let errorMessages = response.data.message
-      if (Array.isArray(errorMessages)) {
-        errorMessages = errorMessages.map(error => error.message).join(' ')
-      }
-      return Promise.reject({
-        response: {
-          status: response.data.status,
-          data: {
-            message: errorMessages
-          }
-        }
+    // Check for backend-specific validation errors even with status code 200
+    if (response.data.errors) {
+      const validationErrors = response.data.errors.map(error => error.message).join(', ')
+      addError({
+        header: 'Validation Error',
+        content: validationErrors,
+        btnText: 'Ok'
       })
+      return Promise.reject(new Error(validationErrors))
     }
     return response
   },
@@ -49,12 +43,20 @@ api.interceptors.response.use(
     mittBus.emit('loader-off')
     let errorMessage = 'An unknown error occurred. Please try again.'
 
+    console.log('error.request :>> ', error.request)
+    console.log('error :>> ', error)
+    console.log('error.response :>> ', error.response)
+    console.log('error.message :>> ', error.message)
+    console.log('error.response.status :>> ', error.response.status)
+    console.log('error.response.data :>> ', error.response.data)
+
     if (error.response) {
       const { status, data } = error.response
+      console.log('Error response data:', data)
       if (status >= 300 && status < 400) {
         errorMessage = 'Redirection error. Please try again.'
       } else if (status >= 400 && status < 500) {
-        errorMessage = data.errors ? data.errors.map(err => err.message).join(' ') : 'Client error. Please check your request and try again.'
+        errorMessage = data.message || 'Client error. Please check your request and try again.'
       } else if (status >= 500) {
         errorMessage = 'Server error. Please try again later.'
       } else {
@@ -62,8 +64,10 @@ api.interceptors.response.use(
       }
     } else if (error.request) {
       errorMessage = 'No response received from the server. Please check your internet connection.'
+      console.log('No response received:', error.request)
     } else {
       errorMessage = error.message
+      console.log('Error message:', error.message)
     }
 
     console.error('API request failed:', errorMessage)
@@ -73,7 +77,7 @@ api.interceptors.response.use(
       btnText: 'Ok'
     })
 
-    throw error
+    return Promise.reject(error) // Ensure the error is returned to the calling function
   }
 )
 
@@ -123,20 +127,18 @@ async function processRequest(method, url, data = {}, params = {}, headers = {})
       errorMessage = error.response.data.message || errorMessage
     }
 
-    console.error('API request failed:', errorMessage)
     addError({
       header: 'Error',
       content: errorMessage,
       btnText: 'Ok'
     })
 
-    // Return a structured error response
-    return {
+    return Promise.reject({
       success: false,
       status: error.response ? error.response.status : 500,
       message: errorMessage,
-      data: []
-    }
+      data: error.response ? error.response.data : {}
+    })
   }
 }
 
