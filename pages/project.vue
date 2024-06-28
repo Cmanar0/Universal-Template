@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-8">
-    <TabComponent />
+    <TabComponent id="tab-project" />
   </div>
 </template>
 

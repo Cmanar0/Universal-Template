@@ -266,7 +266,7 @@ main {
 }
 .menu-mobile-closed {
   width: 0;
-  padding: 0;
+  padding: 0 !important;
   transition: width 0.5s;
 }
 .menu-mobile-open {

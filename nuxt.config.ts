@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   plugins: ['~/plugins/hello.ts', '~/plugins/vue3-apexcharts.js', '~/plugins/vuetify.ts'],
   runtimeConfig: {
     public: {
-      baseApiUrl: process.env.BASE_API_URL // Ensure this is available on both client and server
+      baseApiUrl: process.env.NUXT_PUBLIC_BASE_API_URL // Ensure this is available on both client and server
     }
   },
   modules: [
@@ -27,8 +27,12 @@ export default defineNuxtConfig({
     vue: {
       template: {
         transformAssetUrls
+      },
+      script: {
+        propsDestructure: true
       }
-    }
+    },
+    envPrefix: 'NUXT_PUBLIC_'
   },
   css: ['~/assets/css/main.css']
 })

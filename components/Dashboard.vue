@@ -1,15 +1,9 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-8">
     <!-- Top Section: User Info and Subscription -->
-    <div
-      class="bg-white p-4 gap-y-4 md:gap-y-0 rounded-lg shadow-md flex flex-col md:flex-row items-center justify-between mb-6"
-    >
+    <div class="bg-white p-4 gap-y-4 md:gap-y-0 rounded-lg shadow-md flex flex-col md:flex-row items-center justify-between mb-6">
       <div class="flex items-center mb-4 md:mb-0">
-        <img
-          class="w-16 h-16 rounded-full mr-4"
-          :src="user.profilePic"
-          alt="User profile picture"
-        />
+        <img class="w-16 h-16 rounded-full mr-4" :src="user.profilePic" alt="User profile picture" />
         <div>
           <p class="text-gray-600">Welcome to Skote Dashboard</p>
           <h2 class="text-xl font-bold">{{ user.name }}</h2>
@@ -26,9 +20,7 @@
     </div>
 
     <!-- Welcome Back Section -->
-    <div
-      class="bg-blue-100 p-4 rounded-lg shadow-md mb-6 flex items-center min-h-[155px]"
-    >
+    <div class="bg-blue-100 p-4 rounded-lg shadow-md mb-6 flex items-center min-h-[155px]">
       <div>
         <h3 class="text-lg font-bold text-blue-700 mb-2">Welcome Back!</h3>
         <p class="text-blue-600">Skote Saas Dashboard</p>
@@ -37,12 +29,7 @@
           <li>Multiple apps</li>
         </ul>
       </div>
-      <img
-        class="ml-auto h-24"
-        src="../assets/notification.png"
-        alt="Illustration"
-        style="margin-bottom: -55px"
-      />
+      <img class="ml-auto h-24" src="../assets/notification.png" alt="Illustration" style="margin-bottom: -55px" />
     </div>
 
     <!-- Projects Section -->
@@ -50,10 +37,8 @@
       <div
         class="card"
         :class="{
-          'border-green-500':
-            project.isProfitable && project.isSimulationGenerated,
-          'border-red-500':
-            !project.isProfitable && project.isSimulationGenerated,
+          'border-green-500': project.isProfitable && project.isSimulationGenerated,
+          'border-red-500': !project.isProfitable && project.isSimulationGenerated,
           'border-gray-300': !project.isSimulationGenerated
         }"
         v-for="project in projects"
@@ -91,39 +76,20 @@
                   height="150"
                   class="chart-placeholder"
                 ></apexchart>
-                <p v-else class="text-red-500 text-center p-8">
-                  Simulation data will be available after you complete section
-                  "simulation".
-                </p>
+                <p v-else class="text-red-500 text-center p-8">Simulation data will be available after you complete section "simulation".</p>
               </client-only>
             </div>
           </div>
         </div>
         <div class="text-center mt-4 mb-6">
-          <a
-            :href="'/edit-project/' + project.title"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 mr-4 ml-4 w-auto block rounded"
-          >
-            {{
-              isProjectCompleted(project.stages)
-                ? 'Edit Project'
-                : 'Continue Editing'
-            }}
+          <a :href="'/project'" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 mr-4 ml-4 w-auto block rounded">
+            {{ isProjectCompleted(project.stages) ? 'Edit Project' : 'Continue Editing' }}
           </a>
         </div>
-        <div
-          v-if="project.isSimulationGenerated && !project.isProfitable"
-          class="text-center text-red-500 mt-4"
-        >
-          The project needs adjustments to be profitable.
-        </div>
+        <div v-if="project.isSimulationGenerated && !project.isProfitable" class="text-center text-red-500 mt-4">The project needs adjustments to be profitable.</div>
         <div class="card-body !py-4">
           <ul class="timeline pl-4">
-            <li
-              v-for="(completed, stage) in project.stages"
-              :key="stage"
-              :class="{ completed: completed }"
-            >
+            <li v-for="(completed, stage) in project.stages" :key="stage" :class="{ completed: completed }">
               <span
                 :class="{
                   'text-gray-800': completed,
