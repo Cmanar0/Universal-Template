@@ -61,7 +61,7 @@
           ></v-text-field>
         </div>
 
-        <div class="mb-4 flex flex-col md:flex-row items-center">
+        <!-- <div class="mb-4 flex flex-col md:flex-row items-center">
           <label for="targetLocation" class="block text-gray-700 font-medium w-full md:w-1/4 text-left pr-4">Target Location</label>
           <v-select
             v-model="targetLocation"
@@ -73,9 +73,9 @@
             class="pt-5 w-full md:w-3/4"
             @change="handleTargetLocationChange"
           ></v-select>
-        </div>
+        </div> -->
 
-        <div v-if="targetLocation === 'International'" class="mb-4 flex flex-col md:flex-row items-center">
+        <!-- <div v-if="targetLocation === 'International'" class="mb-4 flex flex-col md:flex-row items-center">
           <label for="countries" class="block text-gray-700 font-medium w-full md:w-1/4 text-left pr-4">Countries</label>
           <v-select
             v-model="selectedCountries"
@@ -89,9 +89,9 @@
             multiple
             persistent-hint
           ></v-select>
-        </div>
+        </div> -->
 
-        <div v-if="targetLocation === 'National'" class="mb-4 flex flex-col md:flex-row items-center">
+        <!-- <div v-if="targetLocation === 'National'" class="mb-4 flex flex-col md:flex-row items-center">
           <label for="country" class="block text-gray-700 font-medium w-full md:w-1/4 text-left pr-4">Country</label>
           <v-select
             v-model="selectedCountries"
@@ -104,12 +104,12 @@
             dense
             class="pt-5 w-full md:w-3/4"
           ></v-select>
-        </div>
+        </div> -->
 
-        <div v-if="targetLocation === 'Local'" class="mb-4 flex flex-col md:flex-row items-center">
+        <!-- <div v-if="targetLocation === 'Local'" class="mb-4 flex flex-col md:flex-row items-center">
           <label for="city" class="block text-gray-700 font-medium w-full md:w-1/4 text-left pr-4">City</label>
           <v-text-field v-model="city" :rules="[rules.required]" label="Enter City.." color="#1697F6" variant="outlined" dense class="pt-5 w-full md:w-3/4"></v-text-field>
-        </div>
+        </div> -->
 
         <div class="mb-4 flex flex-col md:flex-row items-center">
           <label for="businessModel" class="block text-gray-700 font-medium w-full md:w-1/4 text-left pr-4"
@@ -152,9 +152,9 @@ const businessName = ref('')
 const businessDescription = ref('')
 const businessType = ref('')
 const targetAudience = ref('')
-const targetLocation = ref('Global')
-const selectedCountries = ref([])
-const city = ref('')
+// const targetLocation = ref('Global')
+// const selectedCountries = ref([])
+// const city = ref('')
 const businessModel = ref('')
 
 const countryList = ['United States', 'Canada', 'Germany']
@@ -165,18 +165,18 @@ const rules = {
   national: value => !Array.isArray(value) || 'Exactly one country requiredsssss'
 }
 
-const handleTargetLocationChange = () => {
-  if (targetLocation.value === 'National') {
-    selectedCountries.value = []
-  }
+// const handleTargetLocationChange = () => {
+//   if (targetLocation.value === 'National') {
+//     selectedCountries.value = []
+//   }
 
-  // Add required rule dynamically based on targetLocation
-  if (targetLocation.value === 'International' || targetLocation.value === 'National' || targetLocation.value === 'Local') {
-    rules.dynamicRequired = value => !!value || 'Required.'
-  } else {
-    delete rules.dynamicRequired
-  }
-}
+//   // Add required rule dynamically based on targetLocation
+//   if (targetLocation.value === 'International' || targetLocation.value === 'National' || targetLocation.value === 'Local') {
+//     rules.dynamicRequired = value => !!value || 'Required.'
+//   } else {
+//     delete rules.dynamicRequired
+//   }
+// }
 
 const businessModelTexts = ['Sales Per Unit', 'Subscription Based Sales']
 const businessModelMapping = {
@@ -201,27 +201,27 @@ const submitTask = () => {
   }
 
   const body = {
-    business_name: businessName.value,
-    business_description: businessDescription.value,
-    business_type: businessType.value,
-    target_audience: targetAudience.value,
-    target_location: targetLocation.value,
-    business_model: businessModel.value
+    businessName: businessName.value,
+    businessDescription: businessDescription.value,
+    businessType: businessType.value,
+    targetAudience: targetAudience.value,
+    // target_location: targetLocation.value,
+    businessModel: businessModel.value
   }
 
-  if (targetLocation.value === 'International') {
-    body.countries = selectedCountries.value
-  } else if (targetLocation.value === 'National') {
-    body.country = selectedCountries.value
-  } else if (targetLocation.value === 'Local') {
-    body.city = city.value
-  }
+  // if (targetLocation.value === 'International') {
+  //   body.countries = selectedCountries.value
+  // } else if (targetLocation.value === 'National') {
+  //   body.country = selectedCountries.value
+  // } else if (targetLocation.value === 'Local') {
+  //   body.city = city.value
+  // }
 
   console.log('Submit body:', body)
   // Perform API call with `body`
 }
 
-watch(targetLocation, handleTargetLocationChange)
+// watch(targetLocation, handleTargetLocationChange)
 </script>
 
 <style scoped></style>
