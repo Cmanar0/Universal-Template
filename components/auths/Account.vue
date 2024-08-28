@@ -53,7 +53,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import Cookies from 'js-cookie'
-import apiService from '../services/api-request' // Update the path as necessary
+import apiService from '../../services/api-request' // Update the path as necessary
 
 const user = ref(null)
 
@@ -61,7 +61,6 @@ onMounted(() => {
   const storedUser = localStorage.getItem('bv_user')
   if (storedUser) {
     user.value = JSON.parse(storedUser)
-    console.log('user :>> ', user.value.id)
   }
 })
 
@@ -85,7 +84,6 @@ const fetchAccountData = async () => {
   try {
     console.log('Fetching user data for ID:', user.value.id)
     const response = await apiService.get(`/api/users/${user.value.id}`)
-    console.log('response USER :>> ', response)
     const userData = response.data.data
     form.value = {
       firstName: userData.firstName || '',

@@ -34,5 +34,5 @@ export default defineNuxtConfig({
     },
     envPrefix: 'NUXT_PUBLIC_'
   },
-  css: ['~/assets/css/main.css']
+  css: ['~/css/main.css']
 })

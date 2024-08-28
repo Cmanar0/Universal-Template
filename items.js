@@ -10,6 +10,14 @@ export const weapons = ref([
     value: 100
   },
   {
+    id: 'W02',
+    name: 'Želé dýka',
+    stats: 8,
+    type: 'weapon',
+    level: 1,
+    value: 100
+  },
+  {
     id: 'W3',
     name: 'Kapesní nůž',
     stats: 7,
@@ -483,7 +491,7 @@ export const healingItems = ref([
   {
     id: 'H1',
     name: 'Malý léčivý lektvar',
-    stats: 10,
+    stats: 20,
     type: 'healing',
     level: 1,
     value: 30
@@ -501,7 +509,7 @@ export const healingItems = ref([
   {
     id: 'H3',
     name: 'Velký léčivý lektvar',
-    stats: 20,
+    stats: 50,
     type: 'healing',
     level: 2,
     value: 60
@@ -664,6 +672,30 @@ export const otherItems = ref([
   {
     id: 'O1',
     name: 'Zlatá mince',
+    stats: 1,
+    type: 'other',
+    level: 1,
+    value: 10
+  },
+  {
+    id: 'O02',
+    name: 'Mana malá lahvička',
+    stats: 25,
+    type: 'other',
+    level: 1,
+    value: 10
+  },
+  {
+    id: 'O03',
+    name: 'Mana velká lahvička',
+    stats: 70,
+    type: 'other',
+    level: 1,
+    value: 10
+  },
+  {
+    id: 'O01',
+    name: 'Ocelová láhev',
     stats: 1,
     type: 'other',
     level: 1,

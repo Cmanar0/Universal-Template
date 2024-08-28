@@ -7,8 +7,8 @@
     <!-- Navbar start -->
     <div class="nav-bar">
       <header class="bg-gray-800 text-white p-5">
-        <span>
-          <hamburger class="ham hover:text-gray-300" @click="toggleMenu" />
+        <span class="ham" @click="toggleMenu">
+          <img class="logo" src="../public/hamburger.svg" alt="logo" />
         </span>
 
         <!-- User Dropdown Menu start -->
@@ -23,17 +23,17 @@
                   'transition-transform duration-300': true
                 }"
                 class="icon"
-                src="../assets/svg/down.svg"
+                src="../public/down.svg"
                 alt="dropdown"
               />
             </div>
 
             <ul v-if="isOpen" class="absolute right-0 w-48 py-2 mt-2 bg-white rounded-lg shadow-xl z-20">
               <li>
-                <a href="/account" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Account</a>
+                <a href="/account" class="cursor-pointer block px-4 py-2 text-gray-800 hover:bg-gray-100">Account</a>
               </li>
               <li>
-                <a @click="logout" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Logout</a>
+                <a @click="logout" class="cursor-pointer block px-4 py-2 text-gray-800 hover:bg-gray-100">Logout</a>
               </li>
             </ul>
           </div>
@@ -56,7 +56,7 @@
       >
         <nav>
           <a v-if="(mennuOpen && isMobile) || !isMobile" href="/dashboard" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
-            <img class="icon" src="../assets/svg/projects.svg" alt="projects" />
+            <img class="icon" src="../public/projects.svg" alt="projects" />
             <span
               v-if="(mennuOpen && isMobile) || !isMobile"
               class="menu-item"
@@ -68,7 +68,7 @@
               Projects
             </span>
           </a>
-          <a v-if="(mennuOpen && isMobile) || !isMobile" href="/users" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
+          <!-- <a v-if="(mennuOpen && isMobile) || !isMobile" href="/users" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
             <img class="icon" src="../assets/svg/users.svg" alt="users" />
             <span
               v-if="(mennuOpen && isMobile) || !isMobile"
@@ -80,7 +80,7 @@
             >
               Users
             </span>
-          </a>
+          </a> 
           <a v-if="(mennuOpen && isMobile) || !isMobile" href="/plans" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
             <img class="icon" src="../assets/svg/plans.svg" alt="plans" />
             <span
@@ -93,7 +93,7 @@
             >
               Plans
             </span>
-          </a>
+          </a> -->
         </nav>
       </div>
       <!-- Sidebar end -->
@@ -119,13 +119,11 @@
 </template>
 
 <script setup>
-import hamburger from '../assets/svg/hamburger.vue'
 import ModalOneBtn from '../components/reusable/ModalOneBtn.vue'
 import GlobalSpinner from '../components/reusable/GlobalSpinner.vue'
 import Cookies from 'js-cookie'
 import { onMounted, onUnmounted, ref, reactive, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import mittBus from '../utils/mitt.js'
 import Notification from '../components/reusable/Notification.vue' // Import Notification
 
 const user = ref(null)
@@ -134,7 +132,6 @@ onMounted(() => {
   const storedUser = localStorage.getItem('bv_user')
   if (storedUser) {
     user.value = JSON.parse(storedUser)
-    console.log('user :>> ', user.value)
   }
 })
 // Variables:
@@ -163,10 +160,6 @@ let closeMenuTimeout = null
 
 const toggleMenu = () => {
   mennuOpen.value = !mennuOpen.value
-  setTimeout(() => {
-    mittBus.emit('update-charts') // Emit update-charts event
-    // window.dispatchEvent(new Event('resize')) // Trigger a resize event
-  }, 400) // Adjust the timeout as necessary to match your transition duration
 }
 
 // Watch for changes in mennuOpen and update delayedMenuClosed
@@ -277,7 +270,6 @@ main {
 .menu a {
   display: flex;
   align-items: center;
-
   min-height: 44px;
 }
 
@@ -289,11 +281,13 @@ main {
   margin-left: 2px;
 }
 .ham:hover {
-  fill: #ccc;
+  fill: #ccc; /* Darker color on hover */
 }
 .icon {
   min-width: 1.1em;
   min-height: 1em;
+  max-width: 1.1em;
+  max-height: 1em;
   cursor: pointer;
   display: flex;
 }

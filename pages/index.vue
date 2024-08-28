@@ -1,5 +1,5 @@
 <template>
-  <login-form />
+  <AuthsLoginForm />
 </template>
 <script setup>
 definePageMeta({
