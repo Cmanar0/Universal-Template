@@ -14,7 +14,7 @@
     </div>
 
     <!-- Projects Section -->
-    <ProjectList :projects="projects" :is-project-completed="isProjectCompleted" />
+    <ProjectList :projects="projects" />
   </div>
 </template>
 
@@ -27,6 +27,7 @@ const createNewProject = () => {
 }
 const projects = ref([
   {
+    id: 1,
     title: 'Project A',
     value: 1452,
     change: '+0.2%',
@@ -71,6 +72,7 @@ const projects = ref([
     ]
   },
   {
+    id: 2,
     title: 'Project B',
     value: -200,
     change: '+1.5%',
@@ -114,6 +116,7 @@ const projects = ref([
     ]
   },
   {
+    id: 3,
     title: 'Project C',
     value: -500,
     change: '+3.0%',
@@ -157,6 +160,7 @@ const projects = ref([
     ]
   },
   {
+    id: 4,
     title: 'Project D',
     value: 500,
     change: '+4.5%',
@@ -200,10 +204,6 @@ const projects = ref([
     ]
   }
 ])
-
-const isProjectCompleted = stages => {
-  return Object.values(stages).every(stage => stage)
-}
 </script>
 
 <style scoped>

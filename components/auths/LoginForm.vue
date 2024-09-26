@@ -27,8 +27,8 @@
               class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
             />
             <span class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer" @click="toggleShowPassword">
-              <!-- <img class="icon-eye w-5 h-5" v-if="showPassword" src="eye.svg" alt="Show Password" data-testid="show-password-icon" id="show-password-icon" />
-              <img class="icon-eye w-5 h-5" v-else src="crossed_eye.svg" alt="Hide Password" data-testid="hide-password-icon" id="hide-password-icon" /> -->
+              <img class="icon-eye w-5 h-5" v-if="showPassword" src="/eye.svg" alt="Show Password" data-testid="show-password-icon" id="show-password-icon" />
+              <img class="icon-eye w-5 h-5" v-else src="/crossed_eye.svg" alt="Hide Password" data-testid="hide-password-icon" id="hide-password-icon" />
             </span>
           </div>
         </div>
@@ -56,124 +56,54 @@
 </template>
 
 <script setup lang="ts">
+// ===================== IMPORTS =====================
 import { ref } from 'vue'
 import Cookies from 'js-cookie'
-import axios from 'axios'
-import { addError } from '../../stores/errorsStore.js' // Update the path as necessary
-import mittBus from '../../utils/mitt.js'
+import { AuthApiClient } from '../../api/auth.api'
+import { getJwtClaims } from '../../utils/jwtUtils'
+import type { LoginPayload } from '../../types/api/auth.types'
+import { useRouter } from 'vue-router'
 
-const userInfo = ref({
+// ===================== INSTANCES =====================
+const router = useRouter()
+
+// ===================== STATE =====================
+const userInfo = ref<LoginPayload>({
   email: '',
   password: ''
 })
-
-function getJwtClaims(token) {
-  try {
-    const base64Url = token.split('.')[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const payload = atob(base64)
-    const decoded = JSON.parse(payload)
-    return decoded // Return all claims to check iat and exp
-  } catch (e) {
-    console.error('Error decoding JWT:', e)
-    return {}
-  }
-}
-
-// const rememberMe = ref(false)
 const showPassword = ref(false)
 
+// ===================== METHODS =====================
 const toggleShowPassword = () => {
   showPassword.value = !showPassword.value
 }
 
 const handleSubmit = async () => {
-  mittBus.emit('loader-on')
-
-  try {
-    const url = 'https://next-backend-six.vercel.app/api/auth'
-    const payload = {
-      email: userInfo.value.email,
-      password: userInfo.value.password
-    }
-
-    const response = await axios.post(url, payload, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (response.status === 200) {
-      const data = response.data
-      console.log('response :>> ', response)
-
-      if (data.message === 'User authenticated' && data.data) {
-        const jwt = data.data.jwt
-
-        if (jwt) {
-          console.log('submit data.jwt :>> ', jwt)
-          Cookies.set('bv_jwt', jwt, {
-            expires: 7,
-            secure: true,
-            sameSite: 'Strict'
-          })
-
-          const decodedToken = getJwtClaims(jwt)
-          localStorage.setItem('bv_user', JSON.stringify(decodedToken))
-
-          await navigateTo('/dashboard')
-        } else {
-          console.log('JWT not provided in response')
-          addError({
-            header: 'Error',
-            content: 'JWT not provided in response.',
-            btnText: 'Ok'
-          })
-        }
-      } else {
-        addError({
-          header: 'Error',
-          content: 'Unexpected response format.',
-          btnText: 'Ok'
-        })
-        console.error('Unexpected response format:', data)
-      }
-    } else {
-      const errorMessage = `Login failed with status code: ${response.status}. ${response.statusText}`
-      addError({
-        header: 'Error',
-        content: errorMessage,
-        btnText: 'Ok'
-      })
-      console.error('Login failed:', response.data)
-    }
-  } catch (error) {
-    let errorMessage = 'Login failed. Please try again.'
-
-    if (error.response) {
-      console.error('Error response:', error.response.data)
-
-      errorMessage = error.response.data.errors ? error.response.data.errors.map(err => err.message).join(' ') : `Error: ${error.response.status}`
-    } else if (error.request) {
-      console.error('Error request:', error.request)
-      errorMessage = 'No response received from the server. Please check your internet connection.'
-    } else {
-      console.error('Error message:', error.message)
-      errorMessage = error.message
-    }
-
-    addError({
-      header: 'Error',
-      content: errorMessage,
-      btnText: 'Ok'
-    })
-  } finally {
-    mittBus.emit('loader-off')
+  const payload: LoginPayload = {
+    email: userInfo.value.email,
+    password: userInfo.value.password
   }
-}
 
-const navigateTo = (url: string) => {
-  window.location.href = url
+  // Make the login request using the AuthApiClient
+  const response = await AuthApiClient.login(payload)
+
+  // Check if the response data contains the jwt token
+  if (response.data?.data?.jwt) {
+    const jwt = response.data.data.jwt
+    Cookies.set('bv_jwt', jwt, {
+      expires: 7,
+      secure: true,
+      sameSite: 'Strict'
+    })
+
+    // Use the utility function to decode the token
+    const decodedToken = getJwtClaims(jwt)
+    localStorage.setItem('bv_user', JSON.stringify(decodedToken))
+
+    // Use router instance directly to navigate
+    await router.push('/dashboard')
+  }
 }
 </script>
 

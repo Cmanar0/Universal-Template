@@ -265,6 +265,7 @@ main {
 .menu-mobile-open {
   width: 100%;
   padding: 15px;
+  z-index: 1000;
   transition: width 0.5s;
 }
 .menu a {

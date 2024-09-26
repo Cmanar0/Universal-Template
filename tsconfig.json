@@ -9,5 +9,5 @@
     }
   },
   "exclude": ["node_modules"],
-  "include": ["**/*.ts", "**/*.d.ts"]
+  "include": ["**/*.ts", "**/*.d.ts", "services/api-request.ts", "utils/mitt.js", "stores/project.store.js"]
 }

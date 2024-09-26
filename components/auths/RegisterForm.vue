@@ -27,8 +27,8 @@
               class="w-full p-4 text-sm border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
             />
             <span class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer" @click="toggleShowPassword">
-              <!-- <img class="icon-eye w-5 h-5" v-if="showPassword" src="/eye.svg" alt="Show Password" />
-              <img class="icon-eye w-5 h-5" v-else src="/crossed_eye.svg" alt="Hide Password" /> -->
+              <img class="icon-eye w-5 h-5" v-if="showPassword" src="/eye.svg" alt="Show Password" />
+              <img class="icon-eye w-5 h-5" v-else src="/crossed_eye.svg" alt="Hide Password" />
             </span>
           </div>
         </div>
@@ -50,97 +50,50 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// ===================== IMPORTS =====================
 import { ref } from 'vue'
-import axios from 'axios'
-import { useRouter } from '#imports' // Correct import for Nuxt 3
-import { addError } from '../../stores/errorsStore.js' // Update the path as necessary
-import mittBus from '../../utils/mitt.js'
+import { AuthApiClient } from '../../api/auth.api'
+import { addMessage } from '../../stores/errorsStore.js'
+import { useRouter } from 'vue-router'
+import type { RegisterPayload } from '../../types/interfaces/auth'
 
+// ===================== INSTANCES =====================
 const router = useRouter()
 
-const userInfo = ref({
+// ===================== STATE =====================
+const userInfo = ref<RegisterPayload>({
   email: '',
   password: ''
 })
 
 const showPassword = ref(false)
 
+// ===================== METHODS =====================
 const toggleShowPassword = () => {
   showPassword.value = !showPassword.value
 }
 
 const handleRegistration = async () => {
-  mittBus.emit('loader-on')
+  const payload: RegisterPayload = {
+    email: userInfo.value.email,
+    password: userInfo.value.password
+  }
 
-  try {
-    const url = 'https://next-backend-six.vercel.app/api/register'
-    const payload = {
-      email: userInfo.value.email,
-      password: userInfo.value.password
-    }
+  // Call the register method from AuthApiClient, error handling is done in the service
+  const response = await AuthApiClient.register(payload)
 
-    const response = await axios.post(url, payload, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (response.status === 200 || response.status === 201) {
-      const data = response.data
-      console.log('response :>> ', response)
-
-      if (data.message === 'User created') {
-        const successMessage = 'Registration successful. We sent you an email for verification.'
-        addError({
-          header: 'Success',
-          content: successMessage,
-          btnText: 'Ok'
-        })
-        console.log('Registration successful:', data)
-
-        // Redirect to login page upon successful registration
-        await navigateTo('/')
-      } else {
-        const errorMessage = 'Unexpected response format.'
-        addError({
-          header: 'Error',
-          content: errorMessage,
-          btnText: 'Ok'
-        })
-        console.error('Unexpected response format:', data)
-      }
-    } else {
-      const errorMessage = `Registration failed with status code: ${response.status}. ${response.statusText}`
-      addError({
-        header: 'Error',
-        content: errorMessage,
-        btnText: 'Ok'
-      })
-      console.error('Registration failed:', response.data)
-    }
-  } catch (error) {
-    let errorMessage = 'Registration failed. Please try again.'
-
-    if (error.response) {
-      console.error('Error response:', error.response.data)
-
-      errorMessage = error.response.data.errors ? error.response.data.errors.map(err => err.message).join(' ') : `Error: ${error.response.status}`
-    } else if (error.request) {
-      console.error('Error request:', error.request)
-      errorMessage = 'No response received from the server. Please check your internet connection.'
-    } else {
-      console.error('Error message:', error.message)
-      errorMessage = error.message
-    }
-
-    addError({
-      header: 'Error',
-      content: errorMessage,
+  // Check for status 201 to determine success
+  if (response.status === 201) {
+    const successMessage = 'Registration successful. We sent you an email for verification.'
+    addMessage({
+      header: 'Success',
+      content: successMessage,
       btnText: 'Ok'
     })
-  } finally {
-    mittBus.emit('loader-off')
+
+    // Use router instance directly to navigate
+    await router.push('/')
   }
 }
 </script>

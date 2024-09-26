@@ -70,14 +70,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 defineProps({
   project: {
     type: Object,
-    required: true
-  },
-  isProjectCompleted: {
-    type: Function,
     required: true
   }
 })
@@ -85,10 +83,7 @@ defineProps({
 const apexChartsRef = ref({}) // Initialize as an empty object
 
 function redirectToProject(id) {
-  console.log('redirectToProject', id)
-  // Redirect to project page
-  router.push({ path: `/projects/${id}` })
-  //   window.location.href = `/projects/${id}`
+  router.push({ path: '/project', query: { id } }) // Redirect with the query parameter
 }
 
 onMounted(() => {
@@ -107,6 +102,10 @@ const forceResizeCharts = () => {
     // Or use the resize method if available
     apexChartsRef.value.chart.resize()
   }
+}
+
+const isProjectCompleted = stages => {
+  return Object.values(stages).every(stage => stage)
 }
 </script>
 
