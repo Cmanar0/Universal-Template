@@ -1,6 +1,7 @@
 {
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
+    "types": ["@nuxt/types"],
     "baseUrl": ".",
     "paths": {
       "#imports": [".nuxt/imports.d.ts"],
@@ -9,5 +10,5 @@
     }
   },
   "exclude": ["node_modules"],
-  "include": ["**/*.ts", "**/*.d.ts", "services/api-request.ts", "utils/mitt.js", "stores/project.store.js"]
+  "include": ["**/*.ts", "**/*.d.ts", "services/api-request.ts", "utils/mitt.js", "stores/project.store.ts"]
 }

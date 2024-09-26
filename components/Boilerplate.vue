@@ -8,7 +8,7 @@
 // ===================== IMPORTS =====================
 import { ref, reactive, computed, watch, onMounted, onUnmounted, defineProps, defineEmits } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useProjectStore } from '../stores/project.store' // Pinia store import
+import { useProjectsStore } from '../stores/project.store' // Pinia store import
 
 // ===================== PROPS =====================
 const props = defineProps<{
@@ -25,7 +25,7 @@ const emit = defineEmits<{
 // ===================== INSTANCES =====================
 const router = useRouter() // Vue Router instance
 const route = useRoute() // Vue Route instance
-const store = useProjectStore() // Pinia store instance
+const store = useProjectsStore() // Pinia store instance
 
 // ===================== VARIABLES =====================
 const apiEndpoint = 'https://api.example.com'
@@ -54,7 +54,7 @@ watch(userInfo, (newValue, oldValue) => {
 onMounted(() => {
   console.log('Component mounted')
   logMessage('logged message')
-  store.loadProjects()
+  store.fetchAllProjects()
 })
 
 onUnmounted(() => {

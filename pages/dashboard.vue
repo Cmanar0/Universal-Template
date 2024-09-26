@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100 p-8">
     <dashboard />
 
-    <!-- New project list content -->
+    <!-- Display projects based on the loading and error states -->
     <div v-if="loading" class="text-center mt-8">Loading projects...</div>
     <div v-else-if="error" class="text-center text-red-500 mt-8">{{ error }}</div>
     <div v-else-if="projects.length === 0" class="text-center mt-8">No projects available</div>
@@ -15,23 +15,37 @@
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import projectStore from '@/stores/project.store.js' // Import the plain JavaScript store
+<script setup lang="ts">
+// ===================== IMPORTS =====================
+import { ref, onMounted } from 'vue'
+import { useProjectsStore } from '../stores/project.store'
 
-// Local state variables
+// ===================== META =====================
+definePageMeta({
+  layout: 'custom',
+  middleware: 'auth'
+})
+
+// ===================== STATE =====================
+// Local state variables for loading and error handling
 const loading = ref(false)
 const error = ref('')
-const projects = reactive(projectStore.projects) // Bind the projects to the store's projects array
 
-// Function to load projects using the plain JavaScript store
-async function loadProjects() {
+// ===================== INSTANCES =====================
+// Instantiate the projects store
+const projectsStore = useProjectsStore()
+
+// ===================== COMPUTED =====================
+// Computed property to get the projects from the store
+const projects = projectsStore.projects
+
+// ===================== METHODS =====================
+// Function to load projects from the store
+const loadProjects = async () => {
   loading.value = true
   error.value = ''
   try {
-    await projectStore.loadProjects()
-    // Reassign the projects array to trigger reactivity
-    Object.assign(projects, projectStore.projects)
+    await projectsStore.fetchAllProjects()
   } catch (err) {
     error.value = 'Failed to load projects.'
     console.error(err)
@@ -40,13 +54,9 @@ async function loadProjects() {
   }
 }
 
+// ===================== LIFECYCLE HOOKS =====================
 // Load projects when the component is mounted
 onMounted(loadProjects)
-
-definePageMeta({
-  layout: 'custom',
-  middleware: 'auth'
-})
 </script>
 
 <style scoped>

@@ -1,31 +1,30 @@
 import { apiService } from '../services/api-request'
-import type { Project, CreateProject, UpdateProject } from '../types/api/projects.types'
+import type { ProjectPayload, ProjectResponse, ProjectsResponse } from '../types/api/projects.types'
 
-export const ProjectApiClient = {
-  // Fetch the list of projects
+// API client for the project entity
+export const ProjectsApiClient = {
+  // Get all projects
   getProjects() {
-    return apiService.get<Project[]>('/api/projects')
+    return apiService.get<ProjectsResponse>('/api/projects')
+  },
+
+  // Get a single project by ID
+  getProject(id: string) {
+    return apiService.get<ProjectResponse>(`/api/projects/${id}`)
   },
 
   // Create a new project
-  createProject(projectData: CreateProject) {
-    return apiService.post<Project>('/api/projects', projectData)
+  createProject(projectData: ProjectPayload) {
+    return apiService.post<ProjectResponse>('/api/projects', projectData)
   },
 
-  // Update an existing project
-  updateProject(projectId: string, projectData: UpdateProject) {
-    return apiService.patch<Project>(`/api/projects/${projectId}`, projectData)
+  // Update an existing project by ID
+  updateProject(id: string, projectData: Partial<ProjectPayload>) {
+    return apiService.patch<ProjectResponse>(`/api/projects/${id}`, projectData)
   },
 
-  // Delete a project
-  deleteProject(projectId: string) {
-    return apiService.delete<void>(`/api/projects/${projectId}`)
-  },
-
-  // Fetch a single project by ID (if needed)
-  getProjectById(projectId: string) {
-    return apiService.get<Project>(`/api/projects/${projectId}`)
+  // Delete a project by ID
+  deleteProject(id: string) {
+    return apiService.delete<void>(`/api/projects/${id}`)
   }
 }
-
-export default ProjectApiClient
