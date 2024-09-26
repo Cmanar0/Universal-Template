@@ -3,10 +3,7 @@
     <dashboard />
 
     <!-- Display projects based on the loading and error states -->
-    <div v-if="loading" class="text-center mt-8">Loading projects...</div>
-    <div v-else-if="error" class="text-center text-red-500 mt-8">{{ error }}</div>
-    <div v-else-if="projects.length === 0" class="text-center mt-8">No projects available</div>
-    <div v-else class="mt-8">
+    <div class="mt-8">
       <div v-for="project in projects" :key="project.id" class="p-4 border rounded mb-4 bg-white">
         <h2 class="text-xl font-bold">{{ project.title }}</h2>
         <p>Value: {{ project.value }}</p>
@@ -42,16 +39,8 @@ const projects = projectsStore.projects
 // ===================== METHODS =====================
 // Function to load projects from the store
 const loadProjects = async () => {
-  loading.value = true
-  error.value = ''
-  try {
-    await projectsStore.fetchAllProjects()
-  } catch (err) {
-    error.value = 'Failed to load projects.'
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
+  await projectsStore.fetchAllProjects()
+  console.log('projects :>> ', projects)
 }
 
 // ===================== LIFECYCLE HOOKS =====================
